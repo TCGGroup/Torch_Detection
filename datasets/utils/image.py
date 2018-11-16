@@ -240,6 +240,30 @@ def img_pad(img, expected_shape, pad_val=0):
     return padded_img
 
 
+def img_pad_size_divisor(img, size_divisor, pad_val=0):
+    """
+    Padding the image to the size that can be divide by `size_divisor`.
+
+    Args:
+        img (ndarray): Image array to be padded.
+        size_divisor (int): the number that the padded image can be
+            divided by `size_divisor`
+        pad_val (number or sequence): The same as :func:img_pad
+
+    Returns:
+        padded_img (ndarray): the padded image array
+    """
+    assert isinstance(size_divisor, int)
+
+    img_h, img_w, _ = img.shape
+    padded_img_h = int(np.ceil(img_h / size_divisor) * size_divisor)
+    padded_img_w = int(np.ceil(img_w / size_divisor) * size_divisor)
+    padded_shape = (padded_img_h, padded_img_w)
+
+    padded_img = img_pad(img, padded_shape, pad_val=pad_val)
+    return padded_img
+
+
 ##############################################
 # image crop
 ##############################################
