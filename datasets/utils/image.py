@@ -20,7 +20,7 @@ def img_read(img_path, img_mode='rgb'):
             in `bgr` mode, so we convert it to `rgb` mode when read image.)
 
     Returns:
-        img (np.ndarray): the ndarray of image read by opencv
+        img (ndarray): the ndarray of image read by opencv
     """
     assert is_str(img_path), "The image path must be string."
     if not file_is_exist(img_path):
@@ -59,6 +59,27 @@ def img_write(img, file_path, auto_mkdir=True, img_mode='bgr'):
     if img_mode == 'bgr':
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     return cv2.imwrite(file_path, img)
+
+
+##############################################
+# image visualize
+##############################################
+def img_visualize(img_array, win_name='', wait_time=0, single_img=True):
+    """
+    Show an image given its image array.
+
+    Args:
+        img_array (ndarray): The image array to be displayed.
+        win_name (str): The window name.
+        wait_time (int): value of waiting time to display.
+        single_img (bool): Whether to show a single image or a video,
+            if `single_img`, destroy the window after `quit`, else,
+            destroy all windows after the video is release.
+    """
+    cv2.imshow(win_name, img_array)
+    cv2.waitKey(wait_time)  # use `q` to exit the showing window.
+    if single_img:
+        cv2.destroyWindow(win_name)
 
 
 ##############################################
@@ -213,6 +234,51 @@ def img_flip(img, flip_prob=0, direction="horizontal"):
 
 
 ##############################################
+# image rotate
+##############################################
+def img_rotate(img, angle, center=None, scale=1.0, border_value=0, auto_bound=False):
+    """
+    Rotate an image according to given parameters.
+
+    Args:
+        img (ndarray): Image array to be rotated.
+        angle (float): Rotation degree, positive value mean clockwise rotation.
+        center (tuple): Center of the rotation in the image, by default it is
+            the center of the image.
+        scale (float): Isotropic scale factor. normally, we set `scale=1.0`
+        border_value (int or tuple): Border value. If `int`, means use `red` to
+            fill the border, and if `tuple`, must be `rgb mode`, `(r, g, b)`.
+        auto_bound (bool): Whether to adjust the image size tp cover the whole
+            rotated image.
+
+    Returns:
+        rotated_img (ndarray): the rotated image.
+    """
+    if center is not None and auto_bound:
+        raise ValueError("`auto_bound` conflicts with `center`, "
+                         "we only automatically adjust the image size "
+                         "when the center is the image center.")
+    h, w = img.shape[:2]
+    if center is None:
+        center = ((w - 1) * 0.5, (h - 1) * 0.5)
+    assert isinstance(center, tuple)
+    # in this function, positive angle means counter-clockwise rotation
+    # doc: https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#cv2.getRotationMatrix2D
+    matrix = cv2.getRotationMatrix2D(center, -angle, scale)
+    if auto_bound:
+        cos = np.abs(matrix[0, 0])
+        sin = np.abs(matrix[0, 1])
+        new_w = h * sin + w * cos
+        new_h = h * cos + w * sin
+        matrix[0, 2] += (new_w - w) * 0.5
+        matrix[1, 2] += (new_h - h) * 0.5
+        w = int(np.round(new_w))
+        h = int(np.round(new_h))
+    rotated_img = cv2.warpAffine(img, matrix, (w, h), borderValue=border_value)
+    return rotated_img
+
+
+##############################################
 # image pad
 ##############################################
 def img_pad(img, expected_shape, pad_val=0):
@@ -270,7 +336,7 @@ def img_pad_size_divisor(img, size_divisor, pad_val=0):
 def img_crop(img, size_crop, min_w=0, min_h=0):
     """
     Crop the image to `size_crop` given `min_w` and `min_h`.
-    TODO: Make this function more elegant
+
     Args:
         img (ndarray): Image to be cropped. The channel order
             of `img` is `[height, width, channel]`
@@ -284,6 +350,7 @@ def img_crop(img, size_crop, min_w=0, min_h=0):
     """
     assert isinstance(size_crop, tuple) and len(size_crop) == 2
     assert isinstance(min_w, int) and isinstance(min_h, int)
+    assert min_w >= 0 & min_h >= 0
 
     cropped_width, cropped_height = size_crop
     max_w = min_w + cropped_width - 1
