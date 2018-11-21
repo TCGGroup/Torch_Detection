@@ -76,6 +76,7 @@ def img_visualize(img_array, win_name='', wait_time=0, single_img=True):
             if `single_img`, destroy the window after `quit`, else,
             destroy all windows after the video is release.
     """
+    assert is_str(win_name), "window name must be string"
     cv2.imshow(win_name, img_array)
     cv2.waitKey(wait_time)  # use `q` to exit the showing window.
     if single_img:
@@ -214,8 +215,8 @@ def img_flip(img, flip_prob=0, direction="horizontal"):
             one of ["horizontal", "vertical"]
 
     Returns:
-        tuple: (flipped_img (ndarray), flipped_flag (bool)): the flipped
-            image and the flipped flag.
+        tuple: (flipped_img (ndarray), flipped_flag (bool), direction (str)):
+            the flipped image, the flipped flag and the flipped direction.
     """
     assert direction in ["horizontal", "vertical"], \
         "the direction only support for `horizontal` and `vertical`, but got {}".format(direction)
@@ -230,7 +231,7 @@ def img_flip(img, flip_prob=0, direction="horizontal"):
             flipped_img = np.flip(img, 0)
     else:
         flipped_img = img
-    return flipped_img, flipped_flag
+    return flipped_img, flipped_flag, direction
 
 
 ##############################################
@@ -358,7 +359,7 @@ def img_crop(img, size_crop, min_w=0, min_h=0):
     img_h, img_w, _ = img.shape
     assert max_h <= img_h and max_w <= img_w
 
-    cropped_img = img[min_h:max_h, min_w:max_w, ...]
+    cropped_img = img[min_h:(max_h + 1), min_w:(max_w + 1), ...]
     return cropped_img
 
 
