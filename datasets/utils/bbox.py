@@ -1,5 +1,6 @@
 import numpy as np
-from .image import img_crop
+import cv2
+from .image import img_write, img_visualize
 
 
 ##############################################
@@ -42,6 +43,69 @@ def bbox_parse(annotation, gt_bboxes, gt_labels, gt_bboxes_ignore, cat2label):
     else:
         gt_bboxes.append(bbox)
         gt_labels.append(cat2label[annotation['category_id']])
+
+
+##############################################
+# bbox visualize
+##############################################
+def bbox_visualize(img_array, bboxes, labels, class_names=None, score_thr=0,
+                   bbox_color=(0, 255, 0), text_color=(0, 255, 0), thickness=1, font_scale=0.5,
+                   show=True, win_name='', wait_time=0, out_file=None):
+    """
+    Draw bboxes and class labels (with scores) on an image.
+    If the model is not `Mask R-CNN`, we only visualize `bbox` and `text`, else we put the `bbox`
+    and `text` in the image, then return the `image_array`, then put `mask` in `:func:mask_visualize`
+    in the image, finally visualize all the `bbox`,`text` and `mask`.
+
+    Args:
+        img_array (ndarray): The image to be displayed.
+        bboxes (ndarray): Bounding boxes (with scores), shape (n, 4) or (n, 5).
+        labels (ndarray): Labels of bboxes.
+        class_names (list[str]): Names of each classes.
+        score_thr (float): Minimum score of bboxes to be shown.
+        bbox_color (tuple): color of bbox lines.
+        text_color (tuple): color of texts.
+        thickness (int): thickness of lines.
+        font_scale (float): font scales of texts
+        show (bool): Whether to show the image
+        win_name (str): The window name
+        wait_time (int): value of waiting time to display.
+        out_file (str or None): The filename to write the image.
+
+    Returns:
+        tuple (img_array (ndarray), inds (ndarray, bool))
+    """
+    assert bboxes.ndim == 2
+    assert labels.ndim == 1
+    assert bboxes.shape[0] == labels.shape[0]
+    assert bboxes.shape[1] == 4 or bboxes.shape[1] == 5
+
+    inds = []
+    if score_thr > 0:
+        assert bboxes.shape[1] == 5
+        scores = bboxes[:, -1]
+        inds = scores > score_thr
+        bboxes = bboxes[inds, :]
+        labels = labels[inds]
+
+    for bbox, label in zip(bboxes, labels):
+        bbox_int = bbox.astype(np.int32)
+        left_top = (bbox_int[0], bbox_int[1])
+        right_bottom = (bbox_int[2], bbox_int[3])
+        cv2.rectangle(
+            img_array, left_top, right_bottom, bbox_color, thickness=thickness)
+        label_text = class_names[label] if class_names is not None else 'cls {}'.format(label)
+        if len(bbox) > 4:
+            label_text += '|{:.02f}'.format(bbox[-1])
+        cv2.putText(
+            img_array, label_text, (bbox_int[0], bbox_int[1] - 2), cv2.FONT_HERSHEY_COMPLEX, font_scale, text_color)
+
+    if show:
+        img_visualize(img_array, win_name, wait_time)
+    if out_file is not None:
+        img_write(img_array, out_file)
+    else:
+        return img_array, inds
 
 
 ##############################################
@@ -163,7 +227,7 @@ def bbox_flip(bbox, img_shape, flipped_flag=True, direction="horizontal"):
 ##############################################
 # bbox crop
 ##############################################
-def bbox_crop(img, bbox, label, size_crop):
+def bbox_crop(bbox, img, size_crop):
     """
     Crop the image according to `bbox`, we choose part of image
     with the size of `size_crop` that contains most of `bbox` in
@@ -176,22 +240,20 @@ def bbox_crop(img, bbox, label, size_crop):
     3. compare `bbox_height` with `size_crop[1]`:
             - if `size_crop[1] > bbox_height`, random choose 'min_h'
             - else just choose the `min_bbox_h` as `min_h`
-    4. filter the `bbox` that `area = 0`, and also the `label`
+    4. crop the `bbox` according to the `size_crop` and `min_w`, `min_h`
     TODO: better method to choose crop regions in the image
     TODO: add mode attribute for `bbox`, supported mode: `xyxy`
 
     Args:
-        img (ndarray): Image to be cropped. The channel order
-            of `img` is `[height, width, channel]`
         bbox (ndarray): All gt boxes in an image, and the shape
             of `bbox` is `K x 4`, mode of bbox is `xyxy`
-        label (ndarray): The label of all gt boxes, and the shape
-            of `label` is `K`
+        img (ndarray): Image to be cropped. The channel order
+            of `img` is `[height, width, channel]`
         size_crop (tuple): the image size after crop. and the
             order of `size_crop` is `[width, height]`
 
     Returns:
-        tuple: (cropped_img (ndarray), cropped_bbox (ndarray))
+        tuple: (cropped_bbox (ndarray), min_w (int), min_h (int))
     """
     assert bbox.shape[-1] == 4
 
@@ -219,18 +281,34 @@ def bbox_crop(img, bbox, label, size_crop):
         # type `np.int32` is not as same as `int`
         min_h = int(min_h)
 
-    cropped_img = img_crop(img, size_crop, min_w=min_w, min_h=min_h)
     cropped_bbox = bbox.copy()
     cropped_bbox[..., 0::2] = np.clip(cropped_bbox[..., 0::2] - min_w, 0, cropped_width - 1)
     cropped_bbox[..., 1::2] = np.clip(cropped_bbox[..., 1::2] - min_h, 0, cropped_height - 1)
+    return cropped_bbox, min_w, min_h
 
-    # filter bbox and label
-    invalid = (cropped_bbox[..., 0] == cropped_bbox[..., 2]) | (cropped_bbox[..., 1] == cropped_bbox[..., 3])
+
+##############################################
+# bbox valid
+##############################################
+def bbox_valid(bbox, label):
+    """
+    Filter the invalid bbox.
+
+    Args:
+        bbox (ndarray): All gt boxes in an image, and the shape
+            of `bbox` is `K x 4`, mode of bbox is `xyxy`
+        label (ndarray): The label of all gt boxes, and the shape
+            of `label` is `K`
+
+    Returns:
+        tuple: (cropped_bbox (ndarray), label (ndarray))
+    """
+    invalid = (bbox[..., 0] >= bbox[..., 2]) | (bbox[..., 1] >= bbox[..., 3])
     valid_inds = np.nonzero(~invalid)[0]
-    if len(valid_inds) < len(cropped_bbox):
-        cropped_bbox = cropped_bbox[valid_inds]
+    if len(valid_inds) < len(bbox):
+        bbox = bbox[valid_inds]
         label = label[valid_inds]
-    return cropped_img, cropped_bbox, label
+    return bbox, label
 
 
 ##############################################
