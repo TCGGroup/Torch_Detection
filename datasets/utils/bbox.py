@@ -216,12 +216,38 @@ def bbox_flip(bbox, img_shape, flipped_flag=True, direction="horizontal"):
             flipped_bbox = bbox.copy()
             flipped_bbox[..., 0] = w - bbox[..., 2] - 1
             flipped_bbox[..., 2] = w - bbox[..., 0] - 1
+            flipped_bbox[..., 0::2] = np.clip(flipped_bbox[..., 0::2], 0, img_shape[1])
         else:
             h = img_shape[0]
             flipped_bbox = bbox.copy()
             flipped_bbox[..., 1] = h - bbox[..., 3] - 1
             flipped_bbox[..., 3] = h - bbox[..., 1] - 1
+            flipped_bbox[..., 1::2] = np.clip(flipped_bbox[..., 1::2], 0, img_shape[0])
         return flipped_bbox
+
+
+##############################################
+# bbox pad
+##############################################
+def bbox_pad(bbox, max_num_gts):
+    """
+    Pad the bbox in the first dimension, because the number of bbox
+    in each image is different, but if we want to stack all the bbox
+    across all the image, we have to pad the bbox.
+
+    Args:
+        bbox (ndarray): All gt boxes in an image, and the shape of `bbox`
+            is `K x 4`, mode of bbox is 'xyxy'
+        max_num_gts (int): the maximum number of bbox contain in an image
+            across the dataset
+
+    Returns:
+        padded_bbox (ndarray): padded bbox.
+    """
+    num_bbox = bbox.shape[0]
+    padded_bbox = np.zeros((max_num_gts, 4), dtype=np.float32)
+    padded_bbox[:num_bbox, :] = bbox
+    return padded_bbox
 
 
 ##############################################

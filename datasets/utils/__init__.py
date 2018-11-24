@@ -14,7 +14,7 @@ __all__ = [
     'img_crop', 'img_aspect_ratio', 'img_aspect_ratio_flag',
     # bbox
     'bbox_parse', 'bbox_visualize', 'bbox_normalize', 'bbox_denormalize', 'bbox_resize',
-    'bbox_flip', 'bbox_crop', 'bbox_convert_mode', 'bbox_valid',
+    'bbox_flip', 'bbox_pad', 'bbox_crop', 'bbox_convert_mode', 'bbox_valid',
     # mask
     'mask_parse', 'mask_visualize', 'mask_resize', 'mask_flip', 'mask_crop', 'mask_pad',
     # file_handler
