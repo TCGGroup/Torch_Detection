@@ -53,8 +53,7 @@ def img_write(img, file_path, auto_mkdir=True, img_mode='bgr'):
         bool: write successful or not
     """
     if auto_mkdir:
-        dir_name = osp.dirname(osp.abspath(file_path))
-        exist_or_mkdir(dir_name)
+        exist_or_mkdir(file_path)
     assert img_mode in ['rgb', 'bgr']
     if img_mode == 'bgr':
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
