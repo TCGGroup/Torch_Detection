@@ -1,4 +1,5 @@
 from __future__ import division
+import os.path as osp
 import numpy as np
 import cv2
 from .misc import is_str, file_is_exist, exist_or_mkdir
@@ -125,8 +126,7 @@ def img_denormalize(img, img_mean, img_std, img_mode='rgb'):
 ##############################################
 # image resize
 ##############################################
-def img_resize(img, size=None, scale_factor=None, return_scale=False,
-               interpolation='nearest'):
+def img_resize(img, size=None, scale_factor=None, return_scale=False, interpolation='nearest'):
     """
     Resize the img either given `size` or `scale_factor`. If given `size`,
     we must set `return_scale` as `True`, if given `scale_factor`, we can
@@ -153,8 +153,7 @@ def img_resize(img, size=None, scale_factor=None, return_scale=False,
         if size is None and scale_factor is None:
             raise ValueError('either size or scale_factor should be defined')
         if size is not None and scale_factor is not None:
-            raise ValueError(
-                'only one of size or scale_factor should be defined')
+            raise ValueError('only one of size or scale_factor should be defined')
         if size is not None and not return_scale:
             raise ValueError('should return scale_factor when use size')
 
@@ -231,10 +230,8 @@ def img_flip(img, flip_prob=0, direction="horizontal"):
             the flipped image, the flipped flag and the flipped direction.
     """
     assert direction in ["horizontal", "vertical"], \
-        "the direction only support for `horizontal` and `vertical`, " \
-        "but got {}".format(direction)
-    assert (0 <= flip_prob <= 1), \
-        "the probability to flip the image should be in the interval [0, 1]"
+        "the direction only support for `horizontal` and `vertical`, but got {}".format(direction)
+    assert (0 <= flip_prob <= 1), "the probability to flip the image should be in the interval [0, 1]"
 
     flipped_flag = False
     if np.random.random() < flip_prob:
@@ -251,8 +248,7 @@ def img_flip(img, flip_prob=0, direction="horizontal"):
 ##############################################
 # image rotate
 ##############################################
-def img_rotate(img, angle, center=None, scale=1.0, border_value=0,
-               auto_bound=False):
+def img_rotate(img, angle, center=None, scale=1.0, border_value=0, auto_bound=False):
     """
     Rotate an image according to given parameters.
 
@@ -279,8 +275,7 @@ def img_rotate(img, angle, center=None, scale=1.0, border_value=0,
         center = ((w - 1) * 0.5, (h - 1) * 0.5)
     assert isinstance(center, tuple)
     # in this function, positive angle means counter-clockwise rotation
-    # doc: https://docs.opencv.org/2.4/modules/imgproc/doc
-    # /geometric_transformations.html#cv2.getRotationMatrix2D
+    # doc: https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#cv2.getRotationMatrix2D
     matrix = cv2.getRotationMatrix2D(center, -angle, scale)
     if auto_bound:
         cos = np.abs(matrix[0, 0])
