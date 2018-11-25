@@ -37,15 +37,14 @@ def img_read(img_path, img_mode='rgb'):
 
 def img_write(img, file_path, auto_mkdir=True, img_mode='bgr'):
     """
-    Write image to a file, and if `file_path` does not exist,
-    when set `auto_mkdir`, this function will first make a
-    directory.
+    Write image to a file, and if `file_path` does not exist, when set
+    `auto_mkdir`, this function will first make a directory.
 
     Args:
         img (ndarray): Image array to be written into file.
         file_path (str): The path to save the image array.
-        auto_mkdir (bool): when the `file_path` does not exist,
-            automatically make a directory.
+        auto_mkdir (bool): when the `file_path` does not exist, automatically
+            make a directory.
         img_mode (str): must be `rgb` or `bgr` (because opencv read image
             in `bgr` mode, so we convert it to `bgr` mode when write image.)
 
@@ -72,8 +71,8 @@ def img_visualize(img_array, win_name='', wait_time=0, single_img=True):
         win_name (str): The window name.
         wait_time (int): value of waiting time to display.
         single_img (bool): Whether to show a single image or a video,
-            if `single_img`, destroy the window after `quit`, else,
-            destroy all windows after the video is release.
+            if `single_img`, destroy the window after `quit`, else, destroy
+            all windows after the video is release.
     """
     assert is_str(win_name), "window name must be string"
     cv2.imshow(win_name, img_array)
@@ -87,9 +86,8 @@ def img_visualize(img_array, win_name='', wait_time=0, single_img=True):
 ##############################################
 def img_normalize(img, img_mean, img_std, img_mode='rgb'):
     """
-    Normalize the image by subtract the `img_mean` and
-    divide the `img_std` in the right image mode, the
-    mean and std should correspond to `img_mode`
+    Normalize the image by subtract the `img_mean` and divide the `img_std`
+    in the right image mode, the mean and std should correspond to `img_mode`
 
     Args:
         img (ndarray): Image array to be normalized.
@@ -106,9 +104,8 @@ def img_normalize(img, img_mean, img_std, img_mode='rgb'):
 
 def img_denormalize(img, img_mean, img_std, img_mode='rgb'):
     """
-    De-normalize the image array by multiply `img_std` and add the
-    `img_mean` in the right image mode, the mean and std should
-    correspond to `img_mode`
+    De-normalize the image array by multiply `img_std` and add the `img_mean`
+    in the right image mode, the mean and std should correspond to `img_mode`
 
     Args:
         img (ndarray): Image array to be normalized.
@@ -126,7 +123,8 @@ def img_denormalize(img, img_mean, img_std, img_mode='rgb'):
 ##############################################
 # image resize
 ##############################################
-def img_resize(img, size=None, scale_factor=None, return_scale=False, interpolation='nearest'):
+def img_resize(img, size=None, scale_factor=None, return_scale=False,
+               interpolation='nearest'):
     """
     Resize the img either given `size` or `scale_factor`. If given `size`,
     we must set `return_scale` as `True`, if given `scale_factor`, we can
@@ -153,7 +151,8 @@ def img_resize(img, size=None, scale_factor=None, return_scale=False, interpolat
         if size is None and scale_factor is None:
             raise ValueError('either size or scale_factor should be defined')
         if size is not None and scale_factor is not None:
-            raise ValueError('only one of size or scale_factor should be defined')
+            raise ValueError(
+                'only one of size or scale_factor should be defined')
         if size is not None and not return_scale:
             raise ValueError('should return scale_factor when use size')
 
@@ -230,8 +229,10 @@ def img_flip(img, flip_prob=0, direction="horizontal"):
             the flipped image, the flipped flag and the flipped direction.
     """
     assert direction in ["horizontal", "vertical"], \
-        "the direction only support for `horizontal` and `vertical`, but got {}".format(direction)
-    assert (0 <= flip_prob <= 1), "the probability to flip the image should be in the interval [0, 1]"
+        "the direction only support for `horizontal` and `vertical`, " \
+        "but got {}".format(direction)
+    assert (0 <= flip_prob <= 1), \
+        "the probability to flip the image should be in the interval [0, 1]"
 
     flipped_flag = False
     if np.random.random() < flip_prob:
@@ -248,7 +249,8 @@ def img_flip(img, flip_prob=0, direction="horizontal"):
 ##############################################
 # image rotate
 ##############################################
-def img_rotate(img, angle, center=None, scale=1.0, border_value=0, auto_bound=False):
+def img_rotate(img, angle, center=None, scale=1.0,
+               border_value=0, auto_bound=False):
     """
     Rotate an image according to given parameters.
 
@@ -275,7 +277,8 @@ def img_rotate(img, angle, center=None, scale=1.0, border_value=0, auto_bound=Fa
         center = ((w - 1) * 0.5, (h - 1) * 0.5)
     assert isinstance(center, tuple)
     # in this function, positive angle means counter-clockwise rotation
-    # doc: https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#cv2.getRotationMatrix2D
+    # doc: https://docs.opencv.org/2.4/modules/imgproc/doc
+    # /geometric_transformations.html#cv2.getRotationMatrix2D
     matrix = cv2.getRotationMatrix2D(center, -angle, scale)
     if auto_bound:
         cos = np.abs(matrix[0, 0])
@@ -300,8 +303,7 @@ def img_pad(img, expected_shape, pad_val=0):
     Args:
         img (ndarray): the image to be padded.
         expected_shape (tuple): expected padding shape.
-        pad_val (number or sequence): values to be filled in the
-            padding area.
+        pad_val (number or sequence): values to be filled in the padding area.
 
     Returns:
         padded_img (ndarray): the padded img.
@@ -350,10 +352,10 @@ def img_crop(img, size_crop, min_w=0, min_h=0):
     Crop the image to `size_crop` given `min_w` and `min_h`.
 
     Args:
-        img (ndarray): Image to be cropped. The channel order
-            of `img` is `[height, width, channel]`
-        size_crop (tuple): the image size after crop. and the
-            order of `size_crop` is `[width, height]`
+        img (ndarray): Image to be cropped. The channel order of `img` is
+            `[height, width, channel]`
+        size_crop (tuple): the image size after crop. and the order of
+            `size_crop` is `[width, height]`
         min_w (int): the minimum index in the `width` side.
         min_h (int): the minimum index in the `height` side.
 
@@ -394,17 +396,17 @@ def img_aspect_ratio(width, height):
 
 def img_aspect_ratio_flag(width, height):
     """
-    Calculate the aspect ratio for image given width and height.
-    then give the `flag` for the aspect ratio, when `ratio > 1`,
-    we set `flag` as 1, else we set `flag` as 0.
+    Calculate the aspect ratio for image given width and height. then give the
+    `flag` for the aspect ratio, when `ratio > 1`, we set `flag` as 1, else we
+    set `flag` as 0.
 
     Args:
         width (float): the width of image
         height (float): the height of image
 
     Returns:
-        tupel: (aspect_ratio (float), flag (int)): the aspect_ratio of
-            image and the flag.
+        tupel: (aspect_ratio (float), flag (int)):
+            the aspect_ratio of image and the flag.
     """
     aspect_ratio = img_aspect_ratio(width, height)
     flag = int(aspect_ratio > 1)

@@ -17,12 +17,11 @@ def bbox_parse(annotation, gt_bboxes, gt_labels, gt_bboxes_ignore, cat2label):
         annotation (dict): The annotation dict for an image.
         gt_bboxes (list): The list of ground truth boxes, each element
             in this list is a ground truth box `[x1, y1, x2, y2]`
-        gt_labels (list): The list of ground truth boxes' labels, each
-            element in this list is a numerical label for the specific
-            gt-box.
-        gt_bboxes_ignore (list): The list of crowded ground truth boxes,
-            and we will ignore the crowded ground truth boxes. Each element
-            in this list is a ignored ground truth box `[x1, y1, x2, y2]`
+        gt_labels (list): The list of ground truth boxes' labels, each element
+            in this list is a numerical label for the specific gt-box.
+        gt_bboxes_ignore (list): The list of crowded ground truth boxes, and
+            we will ignore the crowded ground truth boxes. Each element in
+            this list is a ignored ground truth box `[x1, y1, x2, y2]`
         cat2label (dict): The dict that save the matching between the category
             id in the dataset and the numerical label.
     """
@@ -49,13 +48,15 @@ def bbox_parse(annotation, gt_bboxes, gt_labels, gt_bboxes_ignore, cat2label):
 # bbox visualize
 ##############################################
 def bbox_visualize(img_array, bboxes, labels, class_names=None, score_thr=0,
-                   bbox_color=(0, 255, 0), text_color=(0, 255, 0), thickness=1, font_scale=0.5,
-                   show=True, win_name='', wait_time=0, out_file=None):
+                   bbox_color=(0, 255, 0), text_color=(0, 255, 0), thickness=1,
+                   font_scale=0.5, show=True, win_name='', wait_time=0,
+                   out_file=None):
     """
     Draw bboxes and class labels (with scores) on an image.
-    If the model is not `Mask R-CNN`, we only visualize `bbox` and `text`, else we put the `bbox`
-    and `text` in the image, then return the `image_array`, then put `mask` in `:func:mask_visualize`
-    in the image, finally visualize all the `bbox`,`text` and `mask`.
+    If the model is not `Mask R-CNN`, we only visualize `bbox` and `text`,
+    else  we put the `bbox` and `text` in the image, then return the
+    `image_array`, then put `mask` in `:func:mask_visualize` in the image,
+    finally visualize all the `bbox`,`text` and `mask`.
 
     Args:
         img_array (ndarray): The image to be displayed.
@@ -94,11 +95,13 @@ def bbox_visualize(img_array, bboxes, labels, class_names=None, score_thr=0,
         right_bottom = (bbox_int[2], bbox_int[3])
         cv2.rectangle(
             img_array, left_top, right_bottom, bbox_color, thickness=thickness)
-        label_text = class_names[label] if class_names is not None else 'cls {}'.format(label)
+        label_text = class_names[
+            label] if class_names is not None else 'cls {}'.format(label)
         if len(bbox) > 4:
             label_text += '|{:.02f}'.format(bbox[-1])
         cv2.putText(
-            img_array, label_text, (bbox_int[0], bbox_int[1] - 2), cv2.FONT_HERSHEY_COMPLEX, font_scale, text_color)
+            img_array, label_text, (bbox_int[0], bbox_int[1] - 2),
+            cv2.FONT_HERSHEY_COMPLEX, font_scale, text_color)
 
     if show:
         img_visualize(img_array, win_name, wait_time)
@@ -118,8 +121,7 @@ def bbox_normalize(bbox, means=[0, 0, 0, 0], stds=[1., 1., 1., 1.]):
 
     Args:
         bbox (Tensor): bbox tensor to be normalized, which has shape of `A x 4`
-        means (list): list of means for each element in a bbox,
-            the length is 4.
+        means (list): list of means for each element in bbox, the length is 4
         stds (list): list of std for each element in a bbox, the length is 4
 
     Returns:
@@ -145,8 +147,7 @@ def bbox_denormalize(bbox, means=[0, 0, 0, 0], stds=[1., 1., 1., 1.]):
         bbox (Tensor): bbox tensor to be de-normalized, which has shape of
             `A x 4` (regression class agnostic) or has shape of `A x 4C`
             (regression class specific)
-        means (list): list of means for each element in a bbox,
-            the length is 4.
+        means (list): list of means for each element in bbox, the length is 4
         stds (list): list of std for each element in a bbox, the length is 4
 
     Returns:
@@ -191,9 +192,8 @@ def bbox_resize(bbox, scale_factor):
 ##############################################
 def bbox_flip(bbox, img_shape, flipped_flag=True, direction="horizontal"):
     """
-    Flip the `bbox` given the direction and flip flag. And
-    pay attention, the direction and flip flag must correspond
-    with the `img_flip`.
+    Flip the `bbox` given the direction and flip flag. And pay attention,
+    the direction and flip flag must correspond with the `img_flip`.
     TODO: add mode attribute for `bbox`, supported mode: `xyxy`
 
     Args:
@@ -219,7 +219,8 @@ def bbox_flip(bbox, img_shape, flipped_flag=True, direction="horizontal"):
             flipped_bbox = bbox.copy()
             flipped_bbox[..., 0] = w - bbox[..., 2] - 1
             flipped_bbox[..., 2] = w - bbox[..., 0] - 1
-            flipped_bbox[..., 0::2] = np.clip(flipped_bbox[..., 0::2], 0, img_shape[1])
+            flipped_bbox[..., 0::2] = np.clip(
+                flipped_bbox[..., 0::2], 0, img_shape[1])
         else:
             h = img_shape[0]
             flipped_bbox = bbox.copy()
@@ -235,9 +236,9 @@ def bbox_flip(bbox, img_shape, flipped_flag=True, direction="horizontal"):
 ##############################################
 def bbox_pad(bbox, max_num_gts):
     """
-    Pad the bbox in the first dimension, because the number of bbox
-    in each image is different, but if we want to stack all the bbox
-    across all the image, we have to pad the bbox.
+    Pad the bbox in the first dimension, because the number of bbox in each
+    image is different, but if we want to stack all the bbox across all the
+    image, we have to pad the bbox.
 
     Args:
         bbox (ndarray): All gt boxes in an image, and the shape of `bbox`
@@ -259,9 +260,9 @@ def bbox_pad(bbox, max_num_gts):
 ##############################################
 def bbox_crop(bbox, img, size_crop):
     """
-    Crop the image according to `bbox`, we choose part of image
-    with the size of `size_crop` that contains most of `bbox` in
-    the part.
+    Crop the image according to `bbox`, we choose part of image with the size
+    of `size_crop` that contains most of `bbox` in the part.
+
     crop an `img` according to `bbox`:
     1. get the `bbox_width' and `bbox_height` in the `bbox`
     2. compare `bbox_width` with `size_crop[0]`:
@@ -312,8 +313,10 @@ def bbox_crop(bbox, img, size_crop):
         min_h = int(min_h)
 
     cropped_bbox = bbox.copy()
-    cropped_bbox[..., 0::2] = np.clip(cropped_bbox[..., 0::2] - min_w, 0, cropped_width - 1)
-    cropped_bbox[..., 1::2] = np.clip(cropped_bbox[..., 1::2] - min_h, 0, cropped_height - 1)
+    cropped_bbox[..., 0::2] = np.clip(
+        cropped_bbox[..., 0::2] - min_w, 0, cropped_width - 1)
+    cropped_bbox[..., 1::2] = np.clip(
+        cropped_bbox[..., 1::2] - min_h, 0, cropped_height - 1)
     return cropped_bbox, min_w, min_h
 
 
@@ -350,13 +353,16 @@ def bbox_convert_mode(bbox, mode='xywh2xyxy'):
     different situation, e.g., we use `xywh` in annotations, we use `xyxy`
     in `bbox transforms`.
     Currently, we only consider `bbox` mode change in dataset processing stage.
-    TODO: consider `:Tensor:bbox` mode `cxcywh` in anchor, proposals, rois and deltas.
-    TODO: reference `https://github.com/facebookresearch/maskrcnn-benchmark` and use `class` to build all the functions
+    TODO: consider `:Tensor:bbox` mode `cxcywh` in anchor, proposals,
+    TODO: rois and deltas.
+    TODO: reference `https://github.com/facebookresearch/maskrcnn-benchmark`
+    TODO: and use `class` to build all the functions
 
     Args:
         bbox (ndarray): All gt boxes in an image, and the shape
             of `bbox` is `K x 4`
-        mode (str): the mode change of `bbox`, must in `['xywh2xyxy', 'xyxy2xywh']`
+        mode (str): the mode change of `bbox`, must in
+            `['xywh2xyxy', 'xyxy2xywh']`
 
     Returns:
         mode_bbox (ndarray): the `bbox` in the another mode

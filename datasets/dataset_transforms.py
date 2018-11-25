@@ -38,7 +38,7 @@ class ImageTransforms(object):
             pad_shape = img_shape
         img = img.transpose(2, 0, 1)
         return img, img_shape, pad_shape, \
-               scale_factor, flipped_flag, flipped_direction
+            scale_factor, flipped_flag, flipped_direction
 
 
 class BboxTransforms(object):

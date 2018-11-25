@@ -57,7 +57,8 @@ def load(filepath, file_format=None, **kwargs):
     Returns:
         The content from the file.
     """
-    assert is_str(filepath), "The filepath must be string, but got type {}".format(type(filepath))
+    assert is_str(filepath), \
+        "The filepath must be string, but got type {}".format(type(filepath))
     if not file_is_exist(filepath):
         raise FileExistsError('{}, file is not exist'.format(filepath))
 
@@ -81,7 +82,8 @@ def dump(obj, filepath, file_format=None, **kwargs):
         file_format (str, optional): same as `:func:load`
         **kwargs: parameters for `:func:pickle.dump` or `:func:json.dump`
     """
-    assert is_str(filepath), "The filepath must be string, but got type {}".format(type(filepath))
+    assert is_str(filepath), \
+        "The filepath must be string, but got type {}".format(type(filepath))
     exist_or_mkdir(filepath)
 
     if file_format is None:
