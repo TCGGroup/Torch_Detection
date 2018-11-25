@@ -38,11 +38,11 @@ def img_read(img_path, img_mode='rgb'):
 def img_write(img, file_path, auto_mkdir=True, img_mode='bgr'):
     """
     Write image to a file, and if `file_path` does not exist,
-    when set `auto_mkdir`, this function will first make a 
+    when set `auto_mkdir`, this function will first make a
     directory.
 
     Args:
-        img (ndarray): Image array to be written into file. 
+        img (ndarray): Image array to be written into file.
         file_path (str): The path to save the image array.
         auto_mkdir (bool): when the `file_path` does not exist,
             automatically make a directory.
@@ -87,8 +87,8 @@ def img_visualize(img_array, win_name='', wait_time=0, single_img=True):
 ##############################################
 def img_normalize(img, img_mean, img_std, img_mode='rgb'):
     """
-    Normalize the image by subtract the `img_mean` and 
-    divide the `img_std` in the right image mode, the 
+    Normalize the image by subtract the `img_mean` and
+    divide the `img_std` in the right image mode, the
     mean and std should correspond to `img_mode`
 
     Args:
@@ -107,9 +107,9 @@ def img_normalize(img, img_mean, img_std, img_mode='rgb'):
 def img_denormalize(img, img_mean, img_std, img_mode='rgb'):
     """
     De-normalize the image array by multiply `img_std` and add the
-    `img_mean` in the right image mode, the mean and std should 
+    `img_mean` in the right image mode, the mean and std should
     correspond to `img_mode`
-    
+
     Args:
         img (ndarray): Image array to be normalized.
         img_mean (tuple[float]): mean value for each channel of image.
@@ -128,17 +128,17 @@ def img_denormalize(img, img_mean, img_std, img_mode='rgb'):
 ##############################################
 def img_resize(img, size=None, scale_factor=None, return_scale=False, interpolation='nearest'):
     """
-    Resize the img either given `size` or `scale_factor`. If given `size`, 
+    Resize the img either given `size` or `scale_factor`. If given `size`,
     we must set `return_scale` as `True`, if given `scale_factor`, we can
     choose `return_scale` as `True` or `False`.
-    
+
     Args:
         img (ndarray): Image array to be resized.
         size (int or tuple[int]): if `size` is `int`, that means resize
-            the short edge of image into `size`; if `size` is `tuple`, 
-            that means resize image with a scale_factor use the minimum of 
+            the short edge of image into `size`; if `size` is `tuple`,
+            that means resize image with a scale_factor use the minimum of
             `short_edge/min(size)` and `long_edge/max(size)`
-        scale_factor (float or int or tuple[int]): the scale factor used to 
+        scale_factor (float or int or tuple[int]): the scale factor used to
             resized image. if the `scale_factor` is `tuple`, then the image
             will be resized by a randomly selected scale.
         return_scale (bool): return scale_factor or not
@@ -166,31 +166,43 @@ def img_resize(img, size=None, scale_factor=None, return_scale=False, interpolat
     }
 
     _check_size_scale_factor()
-    assert interpolation in ['nearest', 'bilinear', 'bicubic', 'area', 'lanczos'], \
-        "interpolation {} is not supported now, please check the mode.".format(interpolation)
+    assert interpolation in \
+        ['nearest', 'bilinear', 'bicubic', 'area', 'lanczos'], \
+        "interpolation {} is not supported now, " \
+        "please check the mode.".format(interpolation)
 
     h, w = img.shape[:2]
     if size is not None:
         if isinstance(size, int):
             scale_factor = size / min(h, w)
-            new_h, new_w = int(h * scale_factor + 0.5), int(w * scale_factor + 0.5)
-            resized_img = cv2.resize(img, (new_w, new_h), interpolation=interp_codes[interpolation])
+            new_h, new_w = int(h * scale_factor + 0.5), \
+                int(w * scale_factor + 0.5)
+            resized_img = cv2.resize(
+                img, (new_w, new_h), interpolation=interp_codes[interpolation])
         elif isinstance(size, tuple):
             scale_factor = min(min(size) / min(h, w), max(size) / max(h, w))
-            new_h, new_w = int(h * scale_factor + 0.5), int(w * scale_factor + 0.5)
-            resized_img = cv2.resize(img, (new_w, new_h), interpolation=interp_codes[interpolation])
+            new_h, new_w = int(h * scale_factor + 0.5), \
+                int(w * scale_factor + 0.5)
+            resized_img = cv2.resize(
+                img, (new_w, new_h), interpolation=interp_codes[interpolation])
         else:
-            raise ValueError('size must be int or tuple[int], but got {}'.format(type(size)))
+            raise ValueError(
+                'size must be int or tuple[int], '
+                'but got {}'.format(type(size)))
         return resized_img, scale_factor
 
     if scale_factor is not None:
         if isinstance(scale_factor, (int, float)):
-            new_h, new_w = int(h * scale_factor + 0.5), int(w * scale_factor + 0.5)
-            resized_img = cv2.resize(img, (new_w, new_h), interpolation=interp_codes[interpolation])
+            new_h, new_w = int(h * scale_factor + 0.5), \
+                int(w * scale_factor + 0.5)
+            resized_img = cv2.resize(
+                img, (new_w, new_h), interpolation=interp_codes[interpolation])
         elif isinstance(scale_factor, tuple):
             scale_factor = np.random.choice(scale_factor)
-            new_h, new_w = int(h * scale_factor + 0.5), int(w * scale_factor + 0.5)
-            resized_img = cv2.resize(img, (new_w, new_h), interpolation=interp_codes[interpolation])
+            new_h, new_w = int(h * scale_factor + 0.5), \
+                int(w * scale_factor + 0.5)
+            resized_img = cv2.resize(
+                img, (new_w, new_h), interpolation=interp_codes[interpolation])
         else:
             raise ValueError('scale_factor must be int, float or tuple[int], '
                              'but got {}'.format(type(scale_factor)))

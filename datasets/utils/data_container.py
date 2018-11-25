@@ -24,7 +24,6 @@ class DataContainer(object):
 
     We design `DataContainer` and `DataParallel` to overcome these limitations.
     The behavior can be either of the following.
-
     - copy to GPU, pad all tensors to the same size and stack them
     - copy to GPU without stacking
     - leave the objects as is and pass it to the model

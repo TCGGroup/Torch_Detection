@@ -15,7 +15,7 @@ def file_is_exist(file_path):
 
 def exist_or_mkdir(file_path):
     """
-    check the directory name is already exist or not, 
+    check the directory name is already exist or not,
     if exist, just pass it, else make a new directory
     named `dir_name`.
     """
