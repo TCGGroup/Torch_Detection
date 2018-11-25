@@ -40,7 +40,7 @@ class ImageTransforms(object):
             pad_shape = img_shape
         img = img.transpose(2, 0, 1)
         return img, img_shape, pad_shape, \
-               scale_factor, flipped_flag, flipped_direction
+            scale_factor, flipped_flag, flipped_direction
 
 
 class BboxTransforms(object):
@@ -80,7 +80,8 @@ class MaskTransforms(object):
                  pad_shape,
                  flipped_flag,
                  flipped_direction):
-        masks = [mask_resize(mask, scale_factor=scale_factor) for mask in masks]
+        masks = [mask_resize(mask, scale_factor=scale_factor)
+                 for mask in masks]
         masks = [mask_flip(mask, flipped_flag=flipped_flag,
                            direction=flipped_direction) for mask in masks]
         padded_masks = [

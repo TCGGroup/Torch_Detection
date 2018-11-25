@@ -129,7 +129,8 @@ def bbox_normalize(bbox, means=[0, 0, 0, 0], stds=[1., 1., 1., 1.]):
         normalized_bbox (Tensor): normalized bbox.
     """
     assert bbox.shape[1] == len(means) == len(stds) == 4
-    # convert means and stds into tensor like bbox, and expand the first channel
+    # convert means and stds into tensor like bbox,
+    # and expand the first channel
     means = bbox.new_tensor(means).unsqueeze(0)
     stds = bbox.new_tensor(stds).unsqueeze(0)
     # we do not need to backward in this function
@@ -228,7 +229,7 @@ def bbox_flip(bbox, img_shape, flipped_flag=True, direction="horizontal"):
             flipped_bbox[..., 1] = h - bbox[..., 3] - 1
             flipped_bbox[..., 3] = h - bbox[..., 1] - 1
             flipped_bbox[..., 1::2] = np.clip(
-                flipped_bbox[..., 1::2], 0,img_shape[0])
+                flipped_bbox[..., 1::2], 0, img_shape[0])
         return flipped_bbox
 
 

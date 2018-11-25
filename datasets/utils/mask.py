@@ -72,7 +72,7 @@ def mask_visualize(img_array, masks, inds,
 
     for mask in masks:
         _, contours, hierarchy = cv2.findContours(
-            mask, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         cv2.fillPoly(img_array, pts=contours, color=mask_color)
     # `:func:cv2.addWeighted`: dst = src1 * alpha + src2 * beta + gamma
     cv2.addWeighted(src1=img_array, alpha=alpha, src2=output_img,
