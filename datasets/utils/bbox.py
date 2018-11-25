@@ -122,7 +122,8 @@ def bbox_normalize(bbox, means=[0, 0, 0, 0], stds=[1., 1., 1., 1.]):
 
     Args:
         bbox (Tensor): bbox tensor to be normalized, which has shape of `A x 4`
-        means (list): list of means for each element in a bbox, the length is 4.
+        means (list): list of means for each element in a bbox,
+            the length is 4.
         stds (list): list of std for each element in a bbox, the length is 4
 
     Returns:
@@ -148,7 +149,8 @@ def bbox_denormalize(bbox, means=[0, 0, 0, 0], stds=[1., 1., 1., 1.]):
         bbox (Tensor): bbox tensor to be de-normalized, which has shape of
             `A x 4` (regression class agnostic) or has shape of `A x 4C`
             (regression class specific)
-        means (list): list of means for each element in a bbox, the length is 4.
+        means (list): list of means for each element in a bbox,
+            the length is 4.
         stds (list): list of std for each element in a bbox, the length is 4
 
     Returns:

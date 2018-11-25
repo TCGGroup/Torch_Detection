@@ -9,7 +9,8 @@ from .image import img_write, img_visualize, img_resize, img_crop, img_pad
 def mask_parse(annotation, gt_masks, gt_mask_polys, gt_poly_lens, dataset):
     """
     Parse ground-truth mask in an annotation dict. There is no return in this
-    function, because the `gt_masks`, `gt_mask_polys`, `gt_poly_lens` are lists,
+    function, because the `gt_masks`, `gt_mask_polys`, `gt_poly_lens` are
+    lists,
     and if they have append element in this function, the change will be with
     them automatically, do not need to return.
     And because the mask is the whole image size, and actually, when we get the

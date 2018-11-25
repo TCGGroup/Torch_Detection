@@ -188,7 +188,8 @@ def img_resize(img, size=None, scale_factor=None, return_scale=False,
                 img, (new_w, new_h), interpolation=interp_codes[interpolation])
         else:
             raise ValueError(
-                'size must be int or tuple[int], but got {}'.format(type(size)))
+                'size must be int or tuple[int], '
+                'but got {}'.format(type(size)))
         return resized_img, scale_factor
 
     if scale_factor is not None:
