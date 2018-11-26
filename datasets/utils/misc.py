@@ -43,6 +43,7 @@ def is_list_of(seq, check_type):
                 return False
         return True
 
+
 def to_tensor(data):
     """
     Convert objects of various python types to :obj:`torch.Tensor`.
@@ -66,6 +67,7 @@ def to_tensor(data):
     else:
         raise TypeError('type {} cannot be '
                         'converted to tensor.'.format(type(data)))
+
 
 def random_scale(img_scales, mode='range'):
     pass
