@@ -7,7 +7,7 @@ from .data_container import DataContainer
 
 __all__ = [
     # misc
-    'is_str', 'file_is_exist', 'exist_or_mkdir',
+    'is_str', 'file_is_exist', 'exist_or_mkdir', 'is_list_of', 'to_tensor',
     # image
     'img_read', 'img_write', 'img_visualize', 'img_normalize',
     'img_denormalize', 'img_resize', 'img_flip', 'img_rotate', 'img_pad',
