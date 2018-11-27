@@ -33,7 +33,6 @@ class BaseDataset(Dataset):
                  img_expected_sizes,
                  size_divisor=None,
                  flip_ratio=0,
-                 flip_direction='horizontal',
                  be_cell_size=32,
                  be_random_ratio=0.5,
                  proposal_file=None,
@@ -61,7 +60,6 @@ class BaseDataset(Dataset):
             size_divisor (int): the number that the padded image can be
                 divided by `size_divisor`
             flip_ratio (float): the ratio that we use flip in data augmentation
-            flip_direction (str): the flip direction
             be_cell_size (int): Background Erasing cell size, which used in the
                 background erasing process.
             be_random_ratio (float): The ratio to drop background cells in the
@@ -92,9 +90,8 @@ class BaseDataset(Dataset):
         assert is_list_of(self.img_expected_sizes, tuple)
         # size divisor
         self.size_divisor = size_divisor
-        # flip ratio and direction
+        # flip ratio
         self.flip_ratio = flip_ratio
-        self.flip_direction = flip_direction
         # background erasing settings
         self.be_cell_size = be_cell_size
         self.be_random_ratio = be_random_ratio
