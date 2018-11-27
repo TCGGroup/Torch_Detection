@@ -27,6 +27,7 @@ class ImageTransforms(object):
         self.size_divisor = size_divisor
 
     def __call__(self, img_path, expected_size, flip_ratio=0):
+        # TODO: duplicated read if we use multi-times transform for an image
         img = img_read(img_path)
         img = img_normalize(img, self.img_means, self.img_stds)
         img, scale_factor = img_resize(
@@ -49,22 +50,19 @@ class BboxTransforms(object):
         1. resize the bbox given the scale factor that used in resizing image
         2. flip the bbox according to the flipped_flag and img_shape after
            image transforms
-        3. pad the bbox in the first dimension if given max_num_gts of the
-           whole dataset
     """
 
-    def __init__(self, max_num_gts=None):
-        self.max_num_gts = max_num_gts
-
-    def __call__(self, bbox, img_shape, scale_factor, flipped_flag,
+    def __call__(self,
+                 bbox,
+                 img_shape,
+                 scale_factor,
+                 flipped_flag,
                  flipped_direction):
         bbox = bbox_resize(bbox, scale_factor)
         bbox = bbox_flip(bbox,
                          img_shape,
                          flipped_flag=flipped_flag,
                          direction=flipped_direction)
-        if self.max_num_gts is not None:
-            bbox = bbox_pad(bbox, self.max_num_gts)
         return bbox
 
 
@@ -82,8 +80,10 @@ class MaskTransforms(object):
                  pad_shape,
                  flipped_flag,
                  flipped_direction):
-        masks = [mask_resize(mask, scale_factor=scale_factor)
-                 for mask in masks]
+        masks = [
+            mask_resize(mask, scale_factor=scale_factor)
+            for mask in masks
+        ]
         masks = [
             mask_flip(mask,
                       flipped_flag=flipped_flag,
