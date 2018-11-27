@@ -38,7 +38,7 @@ def mask_parse(annotation, gt_masks, gt_mask_polys, gt_poly_lens, dataset):
     ]  # valid polygons have >= 3 points (6 coordinates)
     poly_lens = [len(p) for p in mask_polys]
     gt_mask_polys.append(mask_polys)
-    gt_poly_lens.append(poly_lens)
+    gt_poly_lens.extend(poly_lens)
 
 
 ##############################################

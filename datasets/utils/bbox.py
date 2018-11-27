@@ -30,10 +30,10 @@ def bbox_parse(annotation, gt_bboxes, gt_labels, gt_bboxes_ignore, cat2label):
     # if this annotation is marked as `ignore`, or `area <= 0`
     # we return `-1` and  pass this image. The loop continues
     if annotation.get('ignore', False):
-        return -1
+        return False
     x1, y1, w, h = annotation['bbox']
     if annotation['area'] <= 0 or w < 1 or h < 1:
-        return -1
+        return False
 
     # change `bbox` mode from `xywh` to `xyxy`
     bbox = [x1, y1, x1 + w - 1, y1 + h - 1]
@@ -42,6 +42,7 @@ def bbox_parse(annotation, gt_bboxes, gt_labels, gt_bboxes_ignore, cat2label):
     else:
         gt_bboxes.append(bbox)
         gt_labels.append(cat2label[annotation['category_id']])
+    return True
 
 
 ##############################################
