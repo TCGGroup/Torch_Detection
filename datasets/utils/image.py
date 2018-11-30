@@ -99,6 +99,7 @@ def img_normalize(img, img_mean, img_std, img_mode='rgb'):
         normed_img (ndarray): normalized image array.
     """
     assert img_mode in ['rgb', 'bgr'], "image mode must be 'rgb' or 'bgr'."
+    img = img.astype(np.float32)
     return (img - img_mean) / img_std
 
 

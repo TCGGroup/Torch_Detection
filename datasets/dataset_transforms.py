@@ -22,8 +22,8 @@ class ImageTransforms(object):
                  img_means=(0., 0., 0.),
                  img_stds=(1., 1., 1.),
                  size_divisor=None):
-        self.img_means = img_means
-        self.img_stds = img_stds
+        self.img_means = np.array(img_means, np.float32)
+        self.img_stds = np.array(img_stds, np.float32)
         self.size_divisor = size_divisor
 
     def __call__(self, img_path, expected_size, flip_ratio=0):
@@ -60,7 +60,7 @@ class BboxTransforms(object):
                  flipped_direction):
         bbox = bbox_resize(bbox, scale_factor)
         bbox = bbox_flip(bbox,
-                         img_shape,
+                         img_shape[:2],
                          flipped_flag=flipped_flag,
                          direction=flipped_direction)
         return bbox

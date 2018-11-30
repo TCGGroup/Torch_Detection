@@ -53,8 +53,6 @@ class CocoDataset(BaseDataset):
             gt_poly_lens = []
 
         for i, ann in enumerate(anns):
-            if ann.get('ignore', False):
-                continue
             bbox_parse_return = bbox_parse(ann, gt_bboxes, gt_labels,
                                            gt_bboxes_ignore, self.cat2label)
             if bbox_parse_return is False:
