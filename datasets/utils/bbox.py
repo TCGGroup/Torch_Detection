@@ -301,7 +301,7 @@ def bbox_crop(bbox, img, size_crop):
     else:
         min_crop_w = max(max_bbox_w - cropped_width + 1, 0)
         max_crop_w = min(img_w - cropped_width, min_bbox_w)
-        min_w = np.random.choice(range(int(min_crop_w), int(max_crop_w) + 1))
+        min_w = np.random.randint(int(min_crop_w), int(max_crop_w) + 1)
         # type `np.int32` is not as same as `int`
         min_w = int(min_w)
     if cropped_height < bbox_height:
@@ -309,7 +309,7 @@ def bbox_crop(bbox, img, size_crop):
     else:
         min_crop_h = max(max_bbox_h - cropped_height + 1, 0)
         max_crop_h = min(img_h - cropped_height, min_bbox_h)
-        min_h = np.random.choice(range(int(min_crop_h), int(max_crop_h) + 1))
+        min_h = np.random.randint(int(min_crop_h), int(max_crop_h) + 1)
         # type `np.int32` is not as same as `int`
         min_h = int(min_h)
 
@@ -326,7 +326,7 @@ def bbox_crop(bbox, img, size_crop):
 ##############################################
 def bbox_valid(bbox, label):
     """
-    Filter the invalid bbox.
+    Filter the invalid bbox. Use after flipping the box or cropping the box
 
     Args:
         bbox (ndarray): All gt boxes in an image, and the shape

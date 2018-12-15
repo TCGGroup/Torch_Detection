@@ -3,12 +3,13 @@ import numpy as np
 from .dataset_transforms import ImageTransforms, BboxTransforms, \
     MaskTransforms, BackgroundErasing
 import os.path as osp
-from .utils import load, is_list_of, to_tensor, random_scale, DataContainer
+from .utils import load, is_list_of, to_tensor, random_scale, DataContainer, \
+    img_aspect_ratio_flag
 
 
 class BaseDataset(Dataset):
     """
-    The data format in the annotation json file is as follow:
+    The data format in the annotation pkl file is as follow:
 
     [
         {
@@ -163,8 +164,8 @@ class BaseDataset(Dataset):
         """
         self.flag = np.zeros(len(self.img_infos), dtype=np.uint8)
         for i, img_info in enumerate(self.img_infos):
-            if img_info['width'] / img_info['height'] > 1:
-                self.flag[i] = 1
+            self.flag[i] = img_aspect_ratio_flag(
+                img_info['width'], img_info['height'])
 
     def _rand_another(self, idx):
         pool = np.where(self.flag == self.flag[idx])[0]
@@ -207,8 +208,8 @@ class BaseDataset(Dataset):
         def prepare_single_scale(img_path, expected_size, flip_ratio=0,
                                  proposal=None, bbox=None):
             _img, img_shape, pad_shape, scale_factor, \
-                flipped_flag, flipped_direction = self.img_transforms(
-                    img_path, expected_size, flip_ratio=flip_ratio)
+            flipped_flag, flipped_direction = self.img_transforms(
+                img_path, expected_size, flip_ratio=flip_ratio)
             if bbox is not None:
                 if not len(bbox) == 0:
                     _gt_bboxes = self.bbox_transforms(bbox,
@@ -224,6 +225,7 @@ class BaseDataset(Dataset):
                     random_ratio=self.be_random_ratio)
             _img = to_tensor(_img)
             _img_meta = dict(
+                filename=img_info['filename'],
                 ori_shape=(img_info['height'], img_info['width'], 3),
                 img_shape=img_shape,
                 pad_shape=pad_shape,
@@ -305,7 +307,7 @@ class BaseDataset(Dataset):
         # random select the training size for image
         expected_size = random_scale(self.img_expected_sizes)
         img, img_shape, pad_shape, \
-            scale_factor, flipped_flag, flipped_direction = \
+        scale_factor, flipped_flag, flipped_direction = \
             self.img_transforms(img_path,
                                 expected_size=expected_size,
                                 flip_ratio=self.flip_ratio)
@@ -342,6 +344,7 @@ class BaseDataset(Dataset):
 
         ori_shape = (img_info['height'], img_info['width'], 3)
         img_meta = dict(
+            filename=img_info['filename'],
             ori_shape=ori_shape,
             img_shape=img_shape,
             pad_shape=pad_shape,

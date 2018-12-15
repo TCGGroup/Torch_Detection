@@ -20,7 +20,7 @@ def img_read(img_path, img_mode='rgb'):
             in `bgr` mode, so we convert it to `rgb` mode when read image.)
 
     Returns:
-        img (ndarray): the ndarray of image read by opencv
+        img (ndarray, np.uint8): the ndarray of image read by opencv
     """
     assert is_str(img_path), "The image path must be string."
     if not file_is_exist(img_path):
@@ -47,16 +47,16 @@ def img_write(img, file_path, auto_mkdir=True, img_mode='bgr'):
             make a directory.
         img_mode (str): must be `rgb` or `bgr` (because opencv read image
             in `bgr` mode, so we convert it to `bgr` mode when write image.)
-
-    Returns:
-        bool: write successful or not
     """
     if auto_mkdir:
         exist_or_mkdir(file_path)
     assert img_mode in ['rgb', 'bgr']
     if img_mode == 'bgr':
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    return cv2.imwrite(file_path, img)
+    write_success = cv2.imwrite(file_path, img)
+    assert write_success, "Did not write successfully, " \
+                          "please check the img dimension: {} " \
+                          "and file path: {}".format(img.shape, file_path)
 
 
 ##############################################
@@ -91,16 +91,18 @@ def img_normalize(img, img_mean, img_std, img_mode='rgb'):
 
     Args:
         img (ndarray): Image array to be normalized.
-        img_mean (tuple[float]): mean value for each channel of image.
-        img_std (tuple[float]): std value for each channel of image.
+        img_mean (tuple[float] or list[float]): mean value for each
+            channel of image.
+        img_std (tuple[float] or list[float]): std value for each
+            channel of image.
         img_mode (str): `rgb` or `bgr`, to specify the img mode.
 
     Returns:
-        normed_img (ndarray): normalized image array.
+        normed_img (ndarray, np.float32): normalized image array.
     """
     assert img_mode in ['rgb', 'bgr'], "image mode must be 'rgb' or 'bgr'."
-    img = img.astype(np.float32)
-    return (img - img_mean) / img_std
+    img_norm = (img - img_mean) / img_std
+    return img_norm.astype(np.float32)
 
 
 def img_denormalize(img, img_mean, img_std, img_mode='rgb'):
@@ -137,9 +139,9 @@ def img_resize(img, size=None, scale_factor=None, return_scale=False,
             the short edge of image into `size`; if `size` is `tuple`,
             that means resize image with a scale_factor use the minimum of
             `short_edge/min(size)` and `long_edge/max(size)`
-        scale_factor (float or int or tuple[int]): the scale factor used to
-            resized image. if the `scale_factor` is `tuple`, then the image
-            will be resized by a randomly selected scale.
+        scale_factor (float or int or tuple[float] or tuple[int]): the scale
+            factor used to resized image. if the `scale_factor` is `tuple`,
+            then the image will be resized by a randomly selected scale.
         return_scale (bool): return scale_factor or not
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos"
@@ -175,14 +177,14 @@ def img_resize(img, size=None, scale_factor=None, return_scale=False,
     if size is not None:
         if isinstance(size, int):
             scale_factor = size / min(h, w)
-            new_h, new_w = int(h * scale_factor + 0.5), \
-                int(w * scale_factor + 0.5)
+            new_h, new_w = int(np.round(h * scale_factor)), \
+                int(np.round(w * scale_factor))
             resized_img = cv2.resize(
                 img, (new_w, new_h), interpolation=interp_codes[interpolation])
         elif isinstance(size, tuple):
             scale_factor = min(min(size) / min(h, w), max(size) / max(h, w))
-            new_h, new_w = int(h * scale_factor + 0.5), \
-                int(w * scale_factor + 0.5)
+            new_h, new_w = int(np.round(h * scale_factor)), \
+                int(np.round(w * scale_factor))
             resized_img = cv2.resize(
                 img, (new_w, new_h), interpolation=interp_codes[interpolation])
         else:
@@ -193,14 +195,14 @@ def img_resize(img, size=None, scale_factor=None, return_scale=False,
 
     if scale_factor is not None:
         if isinstance(scale_factor, (int, float)):
-            new_h, new_w = int(h * scale_factor + 0.5), \
-                int(w * scale_factor + 0.5)
+            new_h, new_w = int(np.round(h * scale_factor)), \
+                int(np.round(w * scale_factor))
             resized_img = cv2.resize(
                 img, (new_w, new_h), interpolation=interp_codes[interpolation])
         elif isinstance(scale_factor, tuple):
             scale_factor = np.random.choice(scale_factor)
-            new_h, new_w = int(h * scale_factor + 0.5), \
-                int(w * scale_factor + 0.5)
+            new_h, new_w = int(np.round(h * scale_factor)), \
+                int(np.round(w * scale_factor))
             resized_img = cv2.resize(
                 img, (new_w, new_h), interpolation=interp_codes[interpolation])
         else:
@@ -302,7 +304,7 @@ def img_pad(img, expected_shape, pad_val=0):
     Padding the image according to `expected_shape` by `pad_val`.
 
     Args:
-        img (ndarray): the image to be padded.
+        img (ndarray): the image to be padded. (w, h, c)
         expected_shape (tuple): expected padding shape.
         pad_val (number or sequence): values to be filled in the padding area.
 
@@ -355,7 +357,7 @@ def img_crop(img, size_crop, min_w=0, min_h=0):
     Args:
         img (ndarray): Image to be cropped. The channel order of `img` is
             `[height, width, channel]`
-        size_crop (tuple): the image size after crop. and the order of
+        size_crop (tuple[int]): the image size after crop. and the order of
             `size_crop` is `[width, height]`
         min_w (int): the minimum index in the `width` side.
         min_h (int): the minimum index in the `height` side.
@@ -370,7 +372,7 @@ def img_crop(img, size_crop, min_w=0, min_h=0):
     cropped_width, cropped_height = size_crop
     max_w = min_w + cropped_width - 1
     max_h = min_h + cropped_height - 1
-    img_h, img_w, _ = img.shape
+    img_h, img_w  = img.shape[:2]
     assert max_h <= img_h and max_w <= img_w
 
     cropped_img = img[min_h:(max_h + 1), min_w:(max_w + 1), ...]
@@ -385,14 +387,13 @@ def img_aspect_ratio(width, height):
     Calculate the aspect ratio for image given width and height.
 
     Args:
-        width (float): the width of image
-        height (float): the height of image
+        width (int or float): the width of image
+        height (int or float): the height of image
 
     Returns:
         aspect_ratio (float): the aspect_ratio of image.
     """
-    assert isinstance(width, float) and isinstance(height, float)
-    return width / height
+    return width / float(height)
 
 
 def img_aspect_ratio_flag(width, height):
@@ -402,8 +403,8 @@ def img_aspect_ratio_flag(width, height):
     set `flag` as 0.
 
     Args:
-        width (float): the width of image
-        height (float): the height of image
+        width (int or float): the width of image
+        height (int or float): the height of image
 
     Returns:
         tupel: (aspect_ratio (float), flag (int)):
@@ -411,4 +412,4 @@ def img_aspect_ratio_flag(width, height):
     """
     aspect_ratio = img_aspect_ratio(width, height)
     flag = int(aspect_ratio > 1)
-    return aspect_ratio, flag
+    return flag

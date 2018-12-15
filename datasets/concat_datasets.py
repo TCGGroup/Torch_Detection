@@ -34,7 +34,7 @@ def get_datasets(dataset_cfg, parent=datasets, additional_dict=None):
         if isinstance(dataset_cfg['proposal_file'], (tuple, list)):
             proposal_files = dataset_cfg['proposal_file']
         else:
-            proposal_files = [dataset_cfg['proposal_file']]
+            proposal_files = [dataset_cfg['proposal_file']] * num_dataset
     else:
         proposal_files = [None] * num_dataset
     assert len(proposal_files) == num_dataset
