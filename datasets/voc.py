@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os.path as osp
 import numpy as np
 import xml.etree.ElementTree as ET
@@ -100,9 +101,9 @@ class VOCDataset(BaseDataset):
         }
         if dataset_scope in ['voc07', 'voc12']:
             if not test_mode:
-                cache_file = osp.join(cache_dir, dataset_scope + '_train.json')
+                cache_file = osp.join(cache_dir, dataset_scope + '_train.pkl')
             else:
-                cache_file = osp.join(cache_dir, dataset_scope + '_test.json')
+                cache_file = osp.join(cache_dir, dataset_scope + '_test.pkl')
             exist_or_mkdir(cache_file)
             img_prefix = osp.join(dataset_root, 'JPEGImages/')
             if not file_is_exist(cache_file):
@@ -113,16 +114,16 @@ class VOCDataset(BaseDataset):
 
         elif dataset_scope == 'voc07+12':
             if not test_mode:
-                cache_file = osp.join(cache_dir, dataset_scope + '_train.json')
+                cache_file = osp.join(cache_dir, dataset_scope + '_train.pkl')
             else:
-                cache_file = osp.join(cache_dir, dataset_scope + '_test.json')
+                cache_file = osp.join(cache_dir, dataset_scope + '_test.pkl')
             exist_or_mkdir(cache_file)
             img_prefix = dataset_root
             if not file_is_exist(cache_file):
-                dataset_root07 = osp.join(dataset_root, 'voc2007/')
-                dataset_root12 = osp.join(dataset_root, 'voc2012/')
-                name_prefix07 = 'voc2007/JPEGImages/'
-                name_prefix12 = 'voc2012/JPEGImages/'
+                dataset_root07 = osp.join(dataset_root, 'VOC2007/')
+                dataset_root12 = osp.join(dataset_root, 'VOC2012/')
+                name_prefix07 = 'VOC2007/JPEGImages/'
+                name_prefix12 = 'VOC2012/JPEGImages/'
 
                 if test_mode:
                     dataset_infos = self._parse_voc_single(
@@ -147,7 +148,7 @@ class VOCDataset(BaseDataset):
 
     def _parse_voc_single(self, dataset_root, class_to_cat,
                           test_mode, name_prefix=''):
-        ann_prefix = osp.join(dataset_root, 'annotations/')
+        ann_prefix = osp.join(dataset_root, 'Annotations/')
         if not test_mode:
             filepath = osp.join(
                 dataset_root, 'ImageSets/Main/trainval.txt')
@@ -193,7 +194,7 @@ class VOCDataset(BaseDataset):
                 bboxes.append([x1, y1, x2, y2])
                 labels.append(class_to_cat[cls_name])
         ann = dict(
-            bboxes=np.array(bbox, dtype=np.float32),
+            bboxes=np.array(bboxes, dtype=np.float32),
             labels=np.array(labels, dtype=np.int64),
             bboxes_ignore=np.array(bboxes_ignore, dtype=np.float32)
         )

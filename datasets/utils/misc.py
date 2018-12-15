@@ -85,6 +85,7 @@ def random_scale(img_expected_sizes, mode='range'):
     Returns:
         expected_size (tuple)
     """
+    assert is_list_of(img_expected_sizes, tuple)
     assert mode in ['range', 'value'], \
         "we only support `['range', 'value']` modes, but got {}".format(mode)
 
@@ -92,7 +93,8 @@ def random_scale(img_expected_sizes, mode='range'):
         expected_size = img_expected_sizes[0]
     elif len(img_expected_sizes) == 2:
         if mode == 'value':
-            expected_size = np.random.choice(img_expected_sizes)
+            ind = np.random.randint(0, len(img_expected_sizes))
+            expected_size = img_expected_sizes[ind]
         else:
             long_tuple, short_tuple = zip(*img_expected_sizes)
             min_long, max_long = min(long_tuple), max(long_tuple)
@@ -101,8 +103,10 @@ def random_scale(img_expected_sizes, mode='range'):
             short_chosen = np.random.randint(min_short, max_short + 1)
             expected_size = (long_chosen, short_chosen)
     else:
+        mode = 'value'
         assert mode == 'value', \
             "only `value` mode is supported " \
             "in the case of more than two image sizes"
-        expected_size = np.random.choice(img_expected_sizes)
+        ind = np.random.randint(0, len(img_expected_sizes))
+        expected_size = img_expected_sizes[ind]
     return expected_size

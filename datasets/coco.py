@@ -9,7 +9,8 @@ class CocoDataset(BaseDataset):
         self.coco = COCO(ann_file)
         # load categories
         cat_ids = self.coco.getCatIds()
-        self.classes = self.coco.loadCats(cat_ids)
+        self.classes = [self.coco.loadCats(cat_id)[0]['name']
+                        for cat_id in cat_ids]
         self.cat2label = {
             cat_id: i + 1
             for i, cat_id in enumerate(cat_ids)
