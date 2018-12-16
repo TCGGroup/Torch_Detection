@@ -372,7 +372,7 @@ def img_crop(img, size_crop, min_w=0, min_h=0):
     cropped_width, cropped_height = size_crop
     max_w = min_w + cropped_width - 1
     max_h = min_h + cropped_height - 1
-    img_h, img_w  = img.shape[:2]
+    img_h, img_w = img.shape[:2]
     assert max_h <= img_h and max_w <= img_w
 
     cropped_img = img[min_h:(max_h + 1), min_w:(max_w + 1), ...]

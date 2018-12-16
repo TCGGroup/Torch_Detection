@@ -208,8 +208,8 @@ class BaseDataset(Dataset):
         def prepare_single_scale(img_path, expected_size, flip_ratio=0,
                                  proposal=None, bbox=None):
             _img, img_shape, pad_shape, scale_factor, \
-            flipped_flag, flipped_direction = self.img_transforms(
-                img_path, expected_size, flip_ratio=flip_ratio)
+                flipped_flag, flipped_direction = self.img_transforms(
+                    img_path, expected_size, flip_ratio=flip_ratio)
             if bbox is not None:
                 if not len(bbox) == 0:
                     _gt_bboxes = self.bbox_transforms(bbox,
@@ -307,7 +307,7 @@ class BaseDataset(Dataset):
         # random select the training size for image
         expected_size = random_scale(self.img_expected_sizes)
         img, img_shape, pad_shape, \
-        scale_factor, flipped_flag, flipped_direction = \
+            scale_factor, flipped_flag, flipped_direction = \
             self.img_transforms(img_path,
                                 expected_size=expected_size,
                                 flip_ratio=self.flip_ratio)
