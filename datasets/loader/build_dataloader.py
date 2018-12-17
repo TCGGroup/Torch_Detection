@@ -6,6 +6,7 @@ from .dataset_sampler import GroupSampler, DistributedGroupSampler
 from .collate import collate
 
 # https://github.com/pytorch/pytorch/issues/973
+# `resource` only available in linux
 import resource
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (4096, rlimit[1]))
