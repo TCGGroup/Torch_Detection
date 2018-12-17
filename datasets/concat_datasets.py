@@ -1,6 +1,6 @@
 import numpy as np
 from torch.utils.data.dataset import ConcatDataset as _ConcatDataset
-from builder import obj_from_dict
+from utils import obj_from_dict
 import datasets
 
 
