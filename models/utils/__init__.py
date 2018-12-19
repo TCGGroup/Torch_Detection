@@ -4,7 +4,7 @@ from .checkpoint import save_checkpoint, load_checkpoint
 
 __all__ = [
     # layers
-    'conv3x3_group', 'norm_layer',
+    'conv1x1_group', 'conv3x3_group', 'norm_layer',
     # inits
     'constant_init', 'xavier_init', 'normal_init',
     'uniform_init', 'kaiming_init',

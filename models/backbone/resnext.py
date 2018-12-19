@@ -4,7 +4,7 @@ import logging
 import math
 import torch.nn as nn
 
-from ..utils import conv3x3_group, norm_layer, \
+from ..utils import conv1x1_group, conv3x3_group, norm_layer, \
     kaiming_init, constant_init, load_checkpoint
 
 
@@ -82,12 +82,10 @@ class ResNeXtBottleneck(nn.Module):
         D = int(math.floor(planes * (base_width / 64.)))
         C = cardinality
 
-        self.conv1 = nn.Conv2d(
-            inplanes, D * C, kernel_size=1, stride=1, bias=False)
+        self.conv1 = conv1x1_group(inplanes, D * C, stride=1)
         self.conv2 = conv3x3_group(D * C, D * C, stride=stride,
                                    dilation=dilation, groups=C)
-        self.conv3 = nn.Conv2d(D * C, planes * self.expansion,
-                               kernel_size=1, stride=1, bias=False)
+        self.conv3 = conv1x1_group(D * C, planes * self.expansion, stride=1)
 
         # we want to load pre-trained models
         # for keep the layer name the same as pre-trained models
@@ -146,11 +144,7 @@ def _make_resX_layer(block,
     downsample = None
     if stride != 1 or inplanes != planes * block.expansion:
         downsample = nn.Sequential(
-            nn.Conv2d(inplanes,
-                      planes * block.expansion,
-                      kernel_size=1,
-                      stride=stride,
-                      bias=False),
+            conv1x1_group(inplanes, planes * block.expansion, stride=stride),
             norm_layer(planes * block.expansion)
         )
 
