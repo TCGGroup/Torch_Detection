@@ -322,7 +322,7 @@ class ResNeXt(nn.Module):
             for param in norm1.parameters():
                 param.requires_grad = False
             norm1.eval()
-            norm1.weights.requires_grad = False
+            norm1.weight.requires_grad = False
             norm1.bias.requires_grad = False
             for i in range(1, self.frozen_stages + 1):
                 mod = getattr(self, 'layer{}'.format(i))
