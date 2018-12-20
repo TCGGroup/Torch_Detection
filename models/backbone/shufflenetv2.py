@@ -126,12 +126,12 @@ class ShuffleNetv2Bottleneck(nn.Module):
 
 
 def _make_shufflev2_stage(block,
-                        inplanes,
-                        outplanes,
-                        blocks,
-                        stride=1,
-                        dilation=1,
-                        use_gn=False):
+                          inplanes,
+                          outplanes,
+                          blocks,
+                          stride=1,
+                          dilation=1,
+                          use_gn=False):
     downsample = None
     if stride != 1:
         planes = outplanes // block.expansion
