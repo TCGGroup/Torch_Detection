@@ -123,12 +123,12 @@ class Bottleneck(nn.Module):
 
 
 def _make_res_layer(block,
-                     inplanes,
-                     planes,
-                     blocks,
-                     stride=1,
-                     dilation=1,
-                     use_gn=False):
+                    inplanes,
+                    planes,
+                    blocks,
+                    stride=1,
+                    dilation=1,
+                    use_gn=False):
     downsample = None
     if stride != 1 or inplanes != planes * block.expansion:
         downsample = nn.Sequential(
