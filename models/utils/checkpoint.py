@@ -127,7 +127,7 @@ def weights_to_cpu(state_dict):
         state_dict (OrderedDict): Model weights on GPU.
 
     Returns:
-        OrderedDict: Model weights on GPU.
+        OrderedDict: Model weights on CPU.
     """
     state_dict_cpu = OrderedDict()
     for key, val in state_dict.items():
