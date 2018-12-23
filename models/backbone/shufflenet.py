@@ -39,9 +39,10 @@ class ShuffleNetBottleneck(nn.Module):
 
         # NOTE: Do not use group convolution for the first conv1x1 in Stage 2.
         g = 1 if inplanes == 24 else groups
-        # NOTE: ensure output of concat matches the output channels
+
         planes = outplanes // self.expansion
         assert stride in [1, 2]
+        # NOTE: ensure output of concat matches the output channels
         outplanes = outplanes - inplanes if stride == 2 else outplanes
         self.conv1 = conv1x1_group(inplanes, planes, groups=g)
         self.shuffle1 = ShuffleLayer(groups=g)
@@ -75,10 +76,10 @@ class ShuffleNetBottleneck(nn.Module):
         out = self.relu(out)
         out = self.shuffle1(out)
 
+        # NOTE: do not use ReLU after dw_conv
         out = self.conv2(out)
         norm2 = getattr(self, self.norm_names[1])
         out = norm2(out)
-        out = self.relu(out)
 
         out = self.conv3(out)
         norm3 = getattr(self, self.norm_names[2])
@@ -86,7 +87,7 @@ class ShuffleNetBottleneck(nn.Module):
 
         if self.stride == 2 and self.downsample is not None:
             residual = self.downsample(x)
-            out = torch.cat((out, residual), 1)
+            out = torch.cat((residual, out), 1)
         else:
             out += residual
 
@@ -134,7 +135,8 @@ class ShuffleNet(nn.Module):
 
     The main difference between ResNeXt and shuffleNet is using group in the
     first conv1x1 of a bottleneck, adding shuffle layer after the grouped 1x1
-    conv, changing the group 3x3 conv into depthwise convolution.
+    conv, changing the group 3x3 conv into depthwise convolution, do not use
+    ReLU after depthwise convolution.
 
     Args:
         groups (int): Groups used in 1x1 conv, from {1, 2, 3, 4, 8}.
