@@ -75,7 +75,7 @@ class Bottleneck(nn.Module):
         self.conv2 = conv3x3_group(planes, planes, stride=stride,
                                    dilation=dilation)
         self.conv3 = conv1x1_group(planes, planes * self.expansion,
-                                      stride=1)
+                                   stride=1)
 
         # we want to load pre-trained models
         # for keep the layer name the same as pre-trained models
@@ -131,8 +131,8 @@ def _make_res_layer(block,
     if stride != 1 or inplanes != planes * block.expansion:
         downsample = nn.Sequential(
             conv1x1_group(inplanes,
-                      planes * block.expansion,
-                      stride=stride),
+                          planes * block.expansion,
+                          stride=stride),
             norm_layer(planes * block.expansion)
         )
 
