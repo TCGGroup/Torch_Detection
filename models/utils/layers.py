@@ -29,6 +29,7 @@ def conv3x3_group(in_planes, out_planes, stride=1, dilation=1, groups=1):
                      groups=groups,
                      bias=False)
 
+
 def conv7x7_group(in_planes, out_planes, stride=1, dilation=1, group=1):
     """
     7x7 convolution with padding and group, without bias, in this situation,
@@ -42,6 +43,7 @@ def conv7x7_group(in_planes, out_planes, stride=1, dilation=1, group=1):
                      dilation=dilation,
                      groups=groups,
                      bias=False)
+
 
 def norm_layer(planes, use_gn=False):
     if not use_gn:
