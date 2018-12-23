@@ -1,7 +1,7 @@
 import logging
 import torch.nn as nn
 
-from ..utils import conv3x3_group, norm_layer, conv1x1_group, \
+from ..utils import conv1x1_group, conv3x3_group, norm_layer, \
     kaiming_init, constant_init, load_checkpoint
 
 
