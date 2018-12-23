@@ -1,6 +1,20 @@
 import torch.nn as nn
 
 
+def conv1x1_group(in_planes, out_planes, stride=1, groups=1):
+    """
+    1x1 convolution with group, without bias
+    - Normal 1x1 convolution when groups == 1
+    - Grouped 1x1 convolution when groups > 1
+    """
+    return nn.Conv2d(in_channels=in_planes,
+                     out_channels=out_planes,
+                     kernel_size=1,
+                     stride=stride,
+                     groups=groups,
+                     bias=False)
+
+
 def conv3x3_group(in_planes, out_planes, stride=1, dilation=1, groups=1):
     """
     3x3 convolution with padding and group, without bias, in this situation,
