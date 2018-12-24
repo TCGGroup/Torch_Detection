@@ -4,8 +4,8 @@ import logging
 import math
 import torch.nn as nn
 
-from ..utils import conv1x1_group, conv3x3_group, norm_layer, \
-    kaiming_init, constant_init, load_checkpoint
+from ..utils import conv1x1_group, conv3x3_group, conv7x7_group, \
+    norm_layer, kaiming_init, constant_init, load_checkpoint
 
 
 class ResNeXtBasicBlock(nn.Module):
@@ -238,8 +238,7 @@ class ResNeXt(nn.Module):
         self.use_gn = use_gn
 
         self.inplanes = 64
-        self.conv1 = nn.Conv2d(
-            3, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.conv1 = conv7x7_group(3, 64, stride=2)
         self.norm_name = 'bn1' if not use_gn else 'gn1'
         self.add_module(self.norm_name, norm_layer(64, use_gn))
         self.relu = nn.ReLU(inplace=True)
