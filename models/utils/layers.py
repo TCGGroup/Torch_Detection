@@ -30,7 +30,7 @@ def conv3x3_group(in_planes, out_planes, stride=1, dilation=1, groups=1):
                      bias=False)
 
 
-def conv7x7_group(in_planes, out_planes, stride=1, group=1):
+def conv7x7_group(in_planes, out_planes, stride=1, groups=1):
     """
     7x7 convolution with padding and group, without bias, as first conv
     dilation is set to 1 and padding set to 3.
