@@ -4,7 +4,8 @@ import torch
 import torch.nn as nn
 
 from ..utils import conv1x1_group, conv3x3_group, norm_layer, \
-    kaiming_init, constant_init, load_checkpoint
+    ShuffleLayer, ChannelSplit, kaiming_init, constant_init, \
+    load_checkpoint
 
 
 def InvertedLayer(inplanes,
@@ -57,32 +58,6 @@ def InvertedLayer(inplanes,
             norm_layer(outplanes, use_gn=use_gn),
             nn.ReLU(inplace=True)
         )
-
-
-class ChannelSplit(nn.Module):
-    def __init__(self):
-        super(ChannelSplit, self).__init__()
-
-    def forward(self, x):
-        half_channel = x.shape[2] // 2
-        return x[:, :half_channel, ...], x[:, half_channel:, ...]
-
-
-class ShuffleLayer(nn.Module):
-    def __init__(self, groups):
-        super(ShuffleLayer, self).__init__()
-        self.groups = groups
-
-    def forward(self, x):
-        """
-        Channel shuffle: [N, C, H, W] -> [N, g, C/g, H, W] ->
-                         [N, C/g, g, H, W] -> [N, C, H, W]
-        """
-        N, C, H, W = x.size()
-
-        g = self.groups
-        return x.view(N, g, C / g, H, W).permute(
-            0, 2, 1, 3, 4).reshape(x.size())
 
 
 class ShuffleNetv2Bottleneck(nn.Module):

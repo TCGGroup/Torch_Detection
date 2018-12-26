@@ -5,10 +5,10 @@ import math
 import torch.nn as nn
 
 from ..utils import conv1x1_group, conv3x3_group, conv7x7_group, \
-    norm_layer, kaiming_init, constant_init, load_checkpoint
+    SELayer, norm_layer, kaiming_init, constant_init, load_checkpoint
 
 
-class ResNeXtBasicBlock(nn.Module):
+class SEResNeXtBasicBlock(nn.Module):
     expansion = 1
 
     def __init__(self,
@@ -18,8 +18,9 @@ class ResNeXtBasicBlock(nn.Module):
                  stride=1,
                  dilation=1,
                  use_gn=False,
-                 downsample=None):
-        super(ResNeXtBasicBlock, self).__init__()
+                 downsample=None,
+                 reduction=16):
+        super(SEResNeXtBasicBlock, self).__init__()
 
         self.conv1 = conv3x3_group(
             inplanes, planes * self.expansion, stride, dilation)
@@ -36,6 +37,7 @@ class ResNeXtBasicBlock(nn.Module):
         for name, layer in zip(self.norm_names, norm_layers):
             self.add_module(name, layer)
 
+        self.se_layer = SELayer(planes * self.expansion, reduction)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
 
@@ -55,6 +57,7 @@ class ResNeXtBasicBlock(nn.Module):
         out = self.conv2(out)
         norm2 = getattr(self, self.norm_names[1])
         out = norm2(out)
+        out = self.se_layer(out)
 
         if self.downsample is not None:
             residual = self.downsample(x)
@@ -64,7 +67,7 @@ class ResNeXtBasicBlock(nn.Module):
         return out
 
 
-class ResNeXtBottleneck(nn.Module):
+class SEResNeXtBottleneck(nn.Module):
     expansion = 4
 
     def __init__(self,
@@ -75,8 +78,9 @@ class ResNeXtBottleneck(nn.Module):
                  stride=1,
                  dilation=1,
                  use_gn=False,
-                 downsample=None):
-        super(ResNeXtBottleneck, self).__init__()
+                 downsample=None,
+                 reduction=16):
+        super(SEResNeXtBottleneck, self).__init__()
         D = int(math.floor(planes * (base_width / 64.)))
         C = cardinality
 
@@ -96,6 +100,7 @@ class ResNeXtBottleneck(nn.Module):
         for name, layer in zip(self.norm_names, norm_layers):
             self.add_module(name, layer)
 
+        self.se_layer = SELayer(planes * self.expansion, reduction)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
 
@@ -121,6 +126,7 @@ class ResNeXtBottleneck(nn.Module):
         out = self.conv3(out)
         norm3 = getattr(self, self.norm_names[2])
         out = norm3(out)
+        out = self.se_layer(out)
 
         if self.downsample is not None:
             residual = self.downsample(x)
@@ -130,15 +136,16 @@ class ResNeXtBottleneck(nn.Module):
         return out
 
 
-def _make_resX_layer(block,
-                     inplanes,
-                     planes,
-                     blocks,
-                     base_width,
-                     cardinality,
-                     stride=1,
-                     dilation=1,
-                     use_gn=False):
+def _make_seresX_layer(block,
+                       inplanes,
+                       planes,
+                       blocks,
+                       base_width,
+                       cardinality,
+                       stride=1,
+                       dilation=1,
+                       use_gn=False,
+                       reduction=16):
     downsample = None
     if stride != 1 or inplanes != planes * block.expansion:
         downsample = nn.Sequential(
@@ -154,7 +161,8 @@ def _make_resX_layer(block,
               stride=stride,
               dilation=dilation,
               use_gn=use_gn,
-              downsample=downsample)
+              downsample=downsample,
+              reduction=reduction)
     )
     inplanes = planes * block.expansion
     for i in range(1, blocks):
@@ -165,14 +173,14 @@ def _make_resX_layer(block,
                   cardinality,
                   stride=1,
                   dilation=dilation,
-                  use_gn=use_gn))
+                  use_gn=use_gn,
+                  reduction=reduction))
     return nn.Sequential(*layers)
 
 
-class ResNeXt(nn.Module):
+class SEResNeXt(nn.Module):
     """
-    ResNeXt backbone.
-    paper: https://arxiv.org/abs/1611.05431
+    SEResNeXt backbone.
 
     The different between ResNet and ResNeXt is using group convolution or not.
     ResNeXt use group convolution in the BasicBlock and BottleNeck. There are
@@ -188,6 +196,7 @@ class ResNeXt(nn.Module):
         strides (Sequence[int]): Strides of the first block of each stage.
         dilations (Sequence[int]): Dilation of each stage.
         out_indices (Sequence[int]): Output from which stages.
+        reduction (int): Reduction of channel number in SELayer
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
             not freezing any parameters.
         use_gn (bool): Whether to use GN for normalization layers
@@ -198,11 +207,11 @@ class ResNeXt(nn.Module):
     """
 
     arch_settings = {
-        18: (ResNeXtBasicBlock, (2, 2, 2, 2)),
-        34: (ResNeXtBasicBlock, (3, 4, 6, 3)),
-        50: (ResNeXtBottleneck, (3, 4, 6, 3)),
-        101: (ResNeXtBottleneck, (3, 4, 23, 3)),
-        152: (ResNeXtBottleneck, (3, 8, 36, 3))
+        18: (SEResNeXtBasicBlock, (2, 2, 2, 2)),
+        34: (SEResNeXtBasicBlock, (3, 4, 6, 3)),
+        50: (SEResNeXtBottleneck, (3, 4, 6, 3)),
+        101: (SEResNeXtBottleneck, (3, 4, 23, 3)),
+        152: (SEResNeXtBottleneck, (3, 8, 36, 3))
     }
 
     def __init__(self,
@@ -213,11 +222,12 @@ class ResNeXt(nn.Module):
                  strides=(1, 2, 2, 2),
                  dilations=(1, 1, 1, 1),
                  out_indices=(0, 1, 2, 3),
+                 reduction=16,
                  frozen_stages=-1,
                  use_gn=False,
                  bn_eval=True,
                  bn_frozen=False):
-        super(ResNeXt, self).__init__()
+        super(SEResNeXt, self).__init__()
         if depth not in self.arch_settings:
             raise KeyError('invalid depth {} for resnet'.format(depth))
 
@@ -246,7 +256,7 @@ class ResNeXt(nn.Module):
             stride = strides[i]
             dilation = dilations[i]
             planes = 64 * 2 ** i
-            resX_layer = _make_resX_layer(
+            resX_layer = _make_seresX_layer(
                 block,
                 self.inplanes,
                 planes,
@@ -255,7 +265,8 @@ class ResNeXt(nn.Module):
                 cardinality,
                 stride=stride,
                 dilation=dilation,
-                use_gn=use_gn)
+                use_gn=use_gn,
+                reduction=reduction)
             self.inplanes = planes * block.expansion
             layer_name = 'layer{}'.format(i + 1)
             self.add_module(layer_name, resX_layer)
@@ -294,7 +305,7 @@ class ResNeXt(nn.Module):
             return tuple(outs)
 
     def train(self, mode=True):
-        super(ResNeXt, self).train(mode)
+        super(SEResNeXt, self).train(mode)
         if not self.use_gn:
             if self.bn_eval:
                 for m in self.modules():
