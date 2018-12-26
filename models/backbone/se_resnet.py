@@ -2,29 +2,7 @@ import logging
 import torch.nn as nn
 
 from ..utils import conv1x1_group, conv3x3_group, conv7x7_group, \
-    norm_layer, kaiming_init, constant_init, load_checkpoint
-
-
-class SELayer(nn.Module):
-    """
-    Paper: https://arxiv.org/abs/1709.01507
-    """
-
-    def __init__(self, channel, reduction=16):
-        super(SELayer, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc = nn.Sequential(
-            nn.Linear(channel, channel // reduction),
-            nn.ReLU(inplace=True),
-            nn.Linear(channel // reduction, channel),
-            nn.Sigmoid()
-        )
-
-    def forward(self, x):
-        batch, channel, _, _ = x.size()
-        y = self.avg_pool(x).view(batch, channel)
-        y = self.fc(y).view(batch, channel, 1, 1)
-        return x * y
+    norm_layer, SELayer, kaiming_init, constant_init, load_checkpoint
 
 
 class SEBasicBlock(nn.Module):
