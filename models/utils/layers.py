@@ -50,3 +50,51 @@ def norm_layer(planes, use_gn=False):
         return nn.BatchNorm2d(planes)
     else:
         return nn.GroupNorm(32, planes)
+
+
+class ShuffleLayer(nn.Module):
+    def __init__(self, groups):
+        super(ShuffleLayer, self).__init__()
+        self.groups = groups
+
+    def forward(self, x):
+        """
+        Channel shuffle: [N, C, H, W] -> [N, g, C/g, H, W] ->
+                         [N, C/g, g, H, W] -> [N, C, H, W]
+        """
+        N, C, H, W = x.size()
+
+        g = self.groups
+        return x.view(N, g, C / g, H, W).permute(
+            0, 2, 1, 3, 4).reshape(x.size())
+
+
+class ChannelSplit(nn.Module):
+    def __init__(self):
+        super(ChannelSplit, self).__init__()
+
+    def forward(self, x):
+        half_channel = x.shape[2] // 2
+        return x[:, :half_channel, ...], x[:, half_channel:, ...]
+
+
+class SELayer(nn.Module):
+    """
+    Paper: https://arxiv.org/abs/1709.01507
+    """
+
+    def __init__(self, channel, reduction=16):
+        super(SELayer, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(channel, channel // reduction),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        batch, channel, _, _ = x.size()
+        y = self.avg_pool(x).view(batch, channel)
+        y = self.fc(y).view(batch, channel, 1, 1)
+        return x * y
