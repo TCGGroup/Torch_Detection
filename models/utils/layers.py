@@ -1,3 +1,5 @@
+import warnings
+
 import torch.nn as nn
 
 
@@ -49,7 +51,107 @@ def norm_layer(planes, use_gn=False):
     if not use_gn:
         return nn.BatchNorm2d(planes)
     else:
-        return nn.GroupNorm(32, planes)
+        return nn.GroupNorm(get_group_gn(planes), planes)
+
+
+def get_group_gn(planes):
+    """
+    get number of groups used by GroupNorm, based on number of channels
+    """
+    dim_per_gp = -1
+    num_groups = 32
+
+    assert dim_per_gp == -1 or num_groups == -1, \
+        'GroupNorm can only specify G or C/G'
+
+    if dim_per_gp > 0:
+        assert planes % dim_per_gp == 0
+        groups = planes // dim_per_gp
+    else:
+        assert planes % num_groups == 0
+        groups = num_groups
+    return groups
+
+
+class ConvModule(nn.Module):
+    """
+    This class currently does not used in backbone, only use in necks, heads.
+    TODO: combine the conv layer in backbone with this class
+
+    This class support several types of layers:
+    1. only conv layer
+    2. conv + bn/gn
+    3. conv + bn/gn + relu
+    4. conv + relu
+    5. bn/gn + relu + conv
+    """
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True,
+                 normalize=None,
+                 use_gn=False,
+                 activation=None,
+                 activate_last=True):
+        super(ConvModule, self).__init__()
+        self.with_norm = normalize is not None
+        self.with_activation = activation is not None
+        self.with_bias = bias
+        self.activation = activation
+        self.activate_last = activate_last
+
+        if self.with_norm and self.with_bias:
+            warnings.warn('ConvModule has norm and bias at the same time')
+
+        self.conv = nn.Conv2d(in_channels=in_channels,
+                              out_channels=out_channels,
+                              kernel_size=kernel_size,
+                              stride=stride,
+                              padding=padding,
+                              dilation=dilation,
+                              groups=groups,
+                              bias=bias)
+
+        self.in_channels = self.conv.in_channels
+        self.out_channels = self.conv.out_channels
+        self.kernel_size = self.conv.kernel_size
+        self.stride = self.conv.stride
+        self.padding = self.conv.padding
+        self.dilation = self.conv.dilation
+        self.groups = self.conv.groups
+
+        if self.with_norm:
+            norm_channels = out_channels if self.activate_last else in_channels
+            self.norm = norm_layer(norm_channels, use_gn=use_gn)
+
+        if self.with_activation:
+            assert activation in ['relu', 'relu6'], \
+                'Only ReLU and ReLU6 are supported'
+            if self.activation == 'relu':
+                self.activate = nn.ReLU(inplace=True)
+            elif self.activation == 'relu6':
+                self.activate = nn.ReLU6(inplace=True)
+
+    def forward(self, x):
+        if self.activate_last:
+            x = self.conv(x)
+            if self.with_norm:
+                x = self.norm(x)
+            if self.with_activation:
+                x = self.activate(x)
+        else:
+            if self.with_norm:
+                x = self.norm(x)
+            if self.with_activation:
+                x = self.activate(x)
+            x = self.conv(x)
+        return x
 
 
 class ShuffleLayer(nn.Module):
