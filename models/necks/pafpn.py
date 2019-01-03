@@ -96,7 +96,7 @@ class PAFPN(nn.Module):
                 self.fpn_convs.append(extra_fpn_conv)
 
     def init_weights(self):
-        #TODO: init for ModuleList seems to have some bugs
+        # TODO: init for ModuleList seems to have some bugs
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 xavier_init(m, distribution='uniform')
