@@ -59,7 +59,7 @@ def get_group_gn(planes):
     dim_per_gp = -1
     num_groups = 32
 
-    assert dim_per_gp == -1 or num_groups  == -1, \
+    assert dim_per_gp == -1 or num_groups == -1, \
         'GroupNorm: can only specify G or C/G'
 
     if dim_per_gp > 0:
