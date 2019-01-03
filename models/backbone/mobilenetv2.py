@@ -101,7 +101,7 @@ def _make_layers(block,
 class MobileNetV2(nn.Module):
     # (expansion, out_planes, num_blocks, stride, dilation)
     arch_settings = [(1, 16, 1, 1, 1),
-                     (6, 24, 2, 2, 1),  # NOTE: change stride 2 -> 1 for CIFAR10
+                     (6, 24, 2, 2, 1),  # NOTE: change stride 2->1 for CIFAR10
                      (6, 32, 3, 2, 1),
                      (6, 64, 4, 2, 1),
                      (6, 96, 3, 1, 1),
