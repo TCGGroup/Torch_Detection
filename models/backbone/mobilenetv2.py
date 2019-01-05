@@ -12,8 +12,7 @@ class LinearBottleNeck(nn.Module):
                  expansion=6,
                  stride=1,
                  dilation=1,
-                 use_gn=False,
-                 downsample=None):
+                 use_gn=False):
         super(LinearBottleNeck, self).__init__()
 
         self.planes = inplanes * expansion
@@ -31,28 +30,28 @@ class LinearBottleNeck(nn.Module):
         for name, layer in zip(self.norm_names, norm_layers):
             self.add_module(name, layer)
 
-        self.shortcut = downsample
         self.stride = stride
         self.dialtion = dilation
         self.use_gn = use_gn
+        self.relu6 = nn.ReLU6(inplace=True)
 
     def forward(self, x):
         out = self.conv1(x)
         norm1 = getattr(self, self.norm_names[0])
         out = norm1(out)
-        out = nn.ReLU6(out)
+        out = self.relu6(out)
 
         out = self.conv2(out)
         norm2 = getattr(self, self.norm_names[1])
         out = norm2(out)
-        out = nn.ReLU6(out)
+        out = self.relu6(out)
 
         out = self.conv3(out)
         norm3 = getattr(self, self.norm_names[2])
         out = norm3(out)
 
         if self.stride == 1 & self.inplanes == self.planes:
-            out += self.shortcut(x)
+            out += x
         return out
 
 
@@ -64,41 +63,45 @@ def _make_layers(block,
                  stride=1,
                  dilation=1,
                  use_gn=False):
-    shortcut = None
-    if stride != 1 or inplanes != outplanes:
-        shortcut = nn.Sequential(
-            conv1x1_group(inplanes, outplanes),
-            norm_layer(outplanes, use_gn)
-        )
-
     layers = [
         block(inplanes,
               outplanes,
               expansion=expansion,
               stride=stride,
               dilation=dilation,
-              use_gn=use_gn,
-              shortcut=shortcut)
+              use_gn=use_gn)
     ]
 
     inplanes = outplanes
     for i in range(1, blocks):
-        shortcut = nn.Sequential(
-            conv1x1_group(inplanes, outplanes),
-            norm_layer(outplanes, use_gn))
         layers.append(
             block(inplanes,
                   outplanes,
                   expansion=expansion,
                   stride=1,
                   dilation=dilation,
-                  use_gn=use_gn,
-                  shortcut=shortcut)
+                  use_gn=use_gn)
         )
     return nn.Sequential(*layers)
 
 
 class MobileNetV2(nn.Module):
+    """
+    MobileNetV2 backbone.
+    paper: https://arxiv.org/pdf/1801.04381.pdf
+
+    Args:
+        num_stages (int): Resnet stages, normally 4.
+        out_indices (Sequence[int]): Output from which stages.
+        frozen_stages (int): Stages to be frozen (all param fixed). -1 means
+            not freezing any parameters.
+        use_gn (bool): Whether to use GN for normalization layers
+        bn_eval (bool): Whether to set BN layers to eval mode, namely, freeze
+            running stats (mean and var), only used when using BN.
+        bn_frozen (bool): Whether to freeze weight and bias of BN layers, only
+            used when using BN.
+    """
+
     # (expansion, out_planes, num_blocks, stride, dilation)
     arch_settings = [(1, 16, 1, 1, 1),
                      (6, 24, 2, 2, 1),  # NOTE: change stride 2->1 for CIFAR10
@@ -122,6 +125,7 @@ class MobileNetV2(nn.Module):
 
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
+        self.relu6 = nn.ReLU6(x)
 
         if not use_gn:
             self.bn_eval = bn_eval
@@ -173,7 +177,7 @@ class MobileNetV2(nn.Module):
         x = self.conv1(x)
         norm1 = getattr(self, self.norm1_name)
         x = norm1(x)
-        x = nn.ReLU6(x)
+        x = self.relu6(x)
 
         outs = []
         for i, layer_name in enumerate(self.mobilev2_layers):
@@ -186,7 +190,7 @@ class MobileNetV2(nn.Module):
                     x = self.conv2(x)
                     norm2 = getattr(self, self.norm2_name)
                     x = norm2(x)
-                    x = nn.ReLU6(x)
+                    x = self.relu6(x)
                     outs.append(x)
         if len(outs) == 1:
             return outs[0]
