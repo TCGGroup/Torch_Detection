@@ -138,15 +138,15 @@ class MobileNet(nn.Module):
                         norm_layer(round(32 * width_multi), use_gn))
         self.relu = nn.ReLU(inplace=True)
 
-        stage_blocks, num_blocks = self.arch_settings[width_multi]
+        stage_outplanes, stage_blocks = self.arch_settings[width_multi]
+        stage_outplanes = stage_outplanes[:num_stages]
         stage_blocks = stage_blocks[:num_stages]
-        num_blocks = num_blocks[:num_stages]
 
         self.mobilev1_layers = []
-        for i, num_block in enumerate(num_blocks):
+        for i, num_block in enumerate(stage_blocks):
             stride = strides[i]
             dilation = dilations[i]
-            planes = stage_blocks[i]
+            planes = stage_outplanes[i]
 
             mobilev1_layer = _make_layers(
                 Conv_dw_pw,
