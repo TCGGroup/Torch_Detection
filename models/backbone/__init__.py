@@ -6,4 +6,4 @@ from .se_resnet import SEResNet
 from .se_resnext import SEResNeXt
 
 __all__ = ['ResNet', 'ResNeXt', 'ShuffleNet', 'ShuffleNetV2',
-           'SEResNet', 'SEResNeXt']
+           'SEResNet', 'SEResNeXt', 'MobileNet' 'MobileNetV2']

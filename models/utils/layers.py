@@ -54,25 +54,6 @@ def norm_layer(planes, use_gn=False):
         return nn.GroupNorm(get_group_gn(planes), planes)
 
 
-def get_group_gn(planes):
-    """
-    get number of groups used by GroupNorm, based on number of channels
-    """
-    dim_per_gp = -1
-    num_groups = 32
-
-    assert dim_per_gp == -1 or num_groups == -1, \
-        'GroupNorm can only specify G or C/G'
-
-    if dim_per_gp > 0:
-        assert planes % dim_per_gp == 0
-        groups = planes // dim_per_gp
-    else:
-        assert planes % num_groups == 0
-        groups = num_groups
-    return groups
-
-
 class ConvModule(nn.Module):
     """
     This class currently does not used in backbone, only use in necks, heads.
@@ -152,6 +133,25 @@ class ConvModule(nn.Module):
                 x = self.activate(x)
             x = self.conv(x)
         return x
+
+
+def get_group_gn(planes):
+    """
+    get number of groups used by GroupNorm, based on number of channels
+    """
+    dim_per_gp = -1
+    num_groups = 32
+
+    assert dim_per_gp == -1 or num_groups == -1, \
+        'GroupNorm: can only specify G or C/G'
+
+    if dim_per_gp > 0:
+        assert planes % dim_per_gp == 0
+        groups = planes // dim_per_gp
+    else:
+        assert planes % num_groups == 0
+        groups = num_groups
+    return groups
 
 
 class ShuffleLayer(nn.Module):
