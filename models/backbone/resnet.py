@@ -70,12 +70,10 @@ class Bottleneck(nn.Module):
                  downsample=None):
         super(Bottleneck, self).__init__()
 
-        self.conv1 = conv1x1_group(
-            inplanes, planes, stride=1)
+        self.conv1 = conv1x1_group(inplanes, planes)
         self.conv2 = conv3x3_group(planes, planes, stride=stride,
                                    dilation=dilation)
-        self.conv3 = conv1x1_group(planes, planes * self.expansion,
-                                   stride=1)
+        self.conv3 = conv1x1_group(planes, planes * self.expansion)
 
         # we want to load pre-trained models
         # for keep the layer name the same as pre-trained models
@@ -133,7 +131,7 @@ def _make_res_layer(block,
             conv1x1_group(inplanes,
                           planes * block.expansion,
                           stride=stride),
-            norm_layer(planes * block.expansion)
+            norm_layer(planes * block.expansion, use_gn=use_gn)
         )
 
     layers = []
