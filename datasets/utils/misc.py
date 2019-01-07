@@ -16,13 +16,16 @@ def file_is_exist(file_path):
     return osp.isfile(file_path)
 
 
-def exist_or_mkdir(file_path):
+def exist_or_mkdir(file_path, dir=False):
     """
     check the directory name is already exist or not,
     if exist, just pass it, else make a new directory
     named `dir_name`.
     """
-    dir_name = osp.dirname(osp.abspath(file_path))
+    if not dir:
+        dir_name = osp.dirname(osp.abspath(file_path))
+    else:
+        dir_name = osp.abspath(file_path)
     dir_name = osp.expanduser(dir_name)
     if not osp.isdir(dir_name):
         # the difference between `os.mkdir` and `os.makedirs`

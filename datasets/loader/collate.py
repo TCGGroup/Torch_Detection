@@ -42,17 +42,21 @@ def collate(batch, sample_per_gpu=1):
         elif batch[0].stack:
             for i in range(0, len(batch), sample_per_gpu):
                 assert isinstance(batch[i].data, torch.Tensor)
-                # TODO: handle tensors other than 3d
-                assert batch[i].dim() == 3
-                c, h, w = batch[0].size()
+                # handle tensors 2d and 3d
+                assert batch[i].dim() in [2, 3]
+                if batch[i].dim() == 3:
+                    c, h, w = batch[0].size()
+                elif batch[i].dim() == 2:
+                    h, w = batch[0].size()
                 for sample in batch[i:i + sample_per_gpu]:
-                    assert c == sample.size(0)
-                    h = max(h, sample.size(1))
-                    w = max(w, sample.size(2))
+                    if sample.dim() == 3:
+                        assert c == sample.size(-3)
+                    h = max(h, sample.size(-2))
+                    w = max(w, sample.size(-1))
                 padded_samples = [
                     F.pad(
                         sample.data,
-                        (0, w - sample.size(2), 0, h - sample.size(1)),
+                        (0, w - sample.size(-1), 0, h - sample.size(-2)),
                         value=sample.padding_value)
                     for sample in batch[i:i + sample_per_gpu]
                 ]
