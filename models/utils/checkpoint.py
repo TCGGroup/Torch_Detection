@@ -95,7 +95,7 @@ def load_checkpoint(model,
                              'checkpoint.'.format(filename))
         model_name = filename[11:]
         checkpoint = model_zoo.load_url(model_urls[model_name])
-    elif filename.startswith('http://', 'https://'):
+    elif filename.startswith(('http://', 'https://')):
         checkpoint = model_zoo.load_url(filename)
     else:
         if not osp.isfile(filename):
