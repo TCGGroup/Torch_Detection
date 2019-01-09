@@ -46,7 +46,7 @@ class GroupSampler(Sampler):
                 if size == 0:
                     continue
                 indice = np.where(self.flag == i)[0]
-                assert len(indices) == size
+                assert len(indice) == size
                 np.random.shuffle(indice)
                 num_extra = int(np.ceil(size / self.sample_per_gpu)
                                 ) * self.sample_per_gpu - len(indice)
