@@ -95,7 +95,7 @@ def load_checkpoint(model,
                              'checkpoint.'.format(filename))
         model_name = filename[11:]
         checkpoint = model_zoo.load_url(model_urls[model_name])
-    elif filename.startswith('http://', 'https://'):
+    elif filename.startswith(('http://', 'https://')):
         checkpoint = model_zoo.load_url(filename)
     else:
         if not osp.isfile(filename):
@@ -112,12 +112,12 @@ def load_checkpoint(model,
     # strip prefix of state_dict
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
-        # load state_dict
-        if hasattr(model, 'module'):
-            load_state_dict(model.module, state_dict, strict, logger)
-        else:
-            load_state_dict(model, state_dict, strict, logger)
-        return checkpoint
+    # load state_dict
+    if hasattr(model, 'module'):
+        load_state_dict(model.module, state_dict, strict, logger)
+    else:
+        load_state_dict(model, state_dict, strict, logger)
+    return checkpoint
 
 
 def weights_to_cpu(state_dict):
