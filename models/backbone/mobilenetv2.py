@@ -3,6 +3,7 @@ import torch.nn as nn
 
 from ..utils import conv1x1_group, conv3x3_group, \
     norm_layer, kaiming_init, constant_init, load_checkpoint
+from ..registry import BACKBONES
 
 
 class LinearBottleNeck(nn.Module):
@@ -85,6 +86,7 @@ def _make_layers(block,
     return nn.Sequential(*layers)
 
 
+@BACKBONES.register_module
 class MobileNetV2(nn.Module):
     """
     MobileNetV2 backbone.

@@ -6,6 +6,7 @@ import torch.nn as nn
 
 from ..utils import conv1x1_group, conv3x3_group, conv7x7_group, \
     SELayer, norm_layer, kaiming_init, constant_init, load_checkpoint
+from ..registry import BACKBONES
 
 
 class SEResNeXtBasicBlock(nn.Module):
@@ -178,6 +179,7 @@ def _make_seresX_layer(block,
     return nn.Sequential(*layers)
 
 
+@BACKBONES.register_module
 class SEResNeXt(nn.Module):
     """
     SEResNeXt backbone.

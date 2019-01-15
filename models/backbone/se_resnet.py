@@ -3,6 +3,7 @@ import torch.nn as nn
 
 from ..utils import conv1x1_group, conv3x3_group, conv7x7_group, \
     norm_layer, SELayer, kaiming_init, constant_init, load_checkpoint
+from ..registry import BACKBONES
 
 
 class SEBasicBlock(nn.Module):
@@ -165,6 +166,7 @@ def _make_seres_layer(block,
     return nn.Sequential(*layers)
 
 
+@BACKBONES.register_module
 class SEResNet(nn.Module):
     """
     SEResNet backbone.

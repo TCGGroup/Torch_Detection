@@ -5,6 +5,7 @@ import torch.nn as nn
 
 from ..utils import conv1x1_group, conv3x3_group, norm_layer, \
     ShuffleLayer, kaiming_init, constant_init, load_checkpoint
+from ..registry import BACKBONES
 
 
 class ShuffleNetBottleneck(nn.Module):
@@ -111,6 +112,7 @@ def _make_shuffle_stage(block,
     return nn.Sequential(*layers)
 
 
+@BACKBONES.register_module
 class ShuffleNet(nn.Module):
     """
     ShuffleNet backbone.

@@ -2,8 +2,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..utils import ConvModule, xavier_init, constant_init
+from ..registry import NECKS
 
 
+@NECKS.register_module
 class PAFPN(nn.Module):
     def __init__(self,
                  in_channels,

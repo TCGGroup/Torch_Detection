@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn
 
 from ..utils import conv1x1_group, conv3x3_group, norm_layer, \
-    ShuffleLayer, ChannelSplit, kaiming_init, constant_init, \
-    load_checkpoint
+    ShuffleLayer, ChannelSplit, kaiming_init, constant_init, load_checkpoint
+from ..registry import BACKBONES
 
 
 def InvertedLayer(inplanes,
@@ -135,6 +135,7 @@ def _make_shufflev2_stage(block,
     return nn.Sequential(*layers)
 
 
+@BACKBONES.register_module
 class ShuffleNetV2(nn.Module):
     """
     ShuffleNetV2 backbone.
