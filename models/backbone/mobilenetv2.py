@@ -127,7 +127,7 @@ class MobileNetV2(nn.Module):
 
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
-        self.relu6 = nn.ReLU6(x)
+        self.relu6 = nn.ReLU6(inplace=True)
 
         if not use_gn:
             self.bn_eval = bn_eval
